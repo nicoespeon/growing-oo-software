@@ -38,6 +38,19 @@ describe("Auction Snipper", () => {
     auction.announceClosed();
     await application.showsSniperHasLostAuction();
   });
+
+  it("should make a higher bid but loose", async () => {
+    auction.startSellingItem();
+    await application.startBiddingIn(auction);
+    await auction.hasReceivedJoinRequestFromSniper();
+
+    auction.reportPrice(1000, 98, "other bidder");
+    await application.hasShownSniperIsBidding();
+    await auction.hasReceivedBid(1098, ApplicationRunner.SNIPPER_XMPP_ID);
+
+    auction.announceClosed();
+    await application.showsSniperHasLostAuction();
+  });
 });
 
 class FakeAuctionServer implements AuctionServer {
@@ -72,6 +85,8 @@ class FakeAuctionServer implements AuctionServer {
     });
   }
 
+  reportPrice(price: number, increment: number, bidder: string) {}
+
   announceClosed() {
     if (this.currentChat) {
       this.currentChat.sendMessage(new Message());
@@ -85,6 +100,8 @@ class FakeAuctionServer implements AuctionServer {
   async hasReceivedJoinRequestFromSniper() {
     await this.messageListener.receivesAMessage();
   }
+
+  async hasReceivedBid(bid: number, sniperId: string) {}
 }
 
 class SingleMessageListener implements MessageListener {
@@ -107,6 +124,7 @@ class SingleMessageListener implements MessageListener {
  * Instantiate the application and exercise it. Runs expectations.
  */
 class ApplicationRunner {
+  static readonly SNIPPER_XMPP_ID = "???";
   static readonly SNIPER_ID = "sniper";
   static readonly SNIPER_PASSWORD = "sniper";
 
@@ -133,6 +151,8 @@ class ApplicationRunner {
   async showsSniperHasLostAuction(): Promise<void> {
     await this.driver.showsSniperStatus(MainWindow.STATUS_LOST);
   }
+
+  async hasShownSniperIsBidding(): Promise<void> {}
 
   stop(): void {
     this.driver.dispose();
