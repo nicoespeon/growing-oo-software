@@ -4,10 +4,12 @@ import {
   MessageListener,
   Chat,
 } from "./lib/xmpp";
+import { AuctionEventListener } from "./auction-event-listener";
+import { AuctionMessageTranslator } from "./auction-message-translator";
 
 export { Main, MainWindow };
 
-class Main {
+class Main implements AuctionEventListener {
   static readonly AUCTION_RESOURCE = "Auction";
   static readonly JOIN_COMMAND_FORMAT = "SOL Version: 1.1; Command: JOIN;";
   static readonly BID_COMMAND_FORMAT = (bid: number) =>
@@ -31,12 +33,16 @@ class Main {
     );
   }
 
+  auctionClosed() {
+    this.ui.showStatus(MainWindow.STATUS_LOST);
+  }
+
   private joinAuction(connection: XMPPConnection, itemId: string) {
     const chat = connection
       .getChatManager()
       .createChat(
         Main.auctionId(itemId, connection),
-        new UIMessageListener(this.ui)
+        new AuctionMessageTranslator(this)
       );
     chat.sendMessage(new Message(Main.JOIN_COMMAND_FORMAT));
   }
@@ -70,13 +76,5 @@ class MainWindow {
 
   showStatus(status: string) {
     process.stdout.write(status);
-  }
-}
-
-class UIMessageListener implements MessageListener {
-  constructor(private ui: MainWindow) {}
-
-  processMessage(_chat: Chat, _message: Message) {
-    this.ui.showStatus(MainWindow.STATUS_LOST);
   }
 }
