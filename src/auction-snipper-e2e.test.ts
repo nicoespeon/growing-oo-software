@@ -33,7 +33,9 @@ describe("Auction Snipper", () => {
   it("should join auction until auction closes", async () => {
     auction.startSellingItem();
     await application.startBiddingIn(auction);
-    await auction.hasReceivedJoinRequestFromSniper();
+    await auction.hasReceivedJoinRequestFromSniper(
+      ApplicationRunner.SNIPPER_XMPP_ID
+    );
 
     auction.announceClosed();
     await application.showsSniperHasLostAuction();
@@ -42,7 +44,9 @@ describe("Auction Snipper", () => {
   it("should make a higher bid but loose", async () => {
     auction.startSellingItem();
     await application.startBiddingIn(auction);
-    await auction.hasReceivedJoinRequestFromSniper();
+    await auction.hasReceivedJoinRequestFromSniper(
+      ApplicationRunner.SNIPPER_XMPP_ID
+    );
 
     auction.reportPrice(1000, 98, "other bidder");
     await application.hasShownSniperIsBidding();
@@ -67,7 +71,10 @@ class FakeAuctionServer implements AuctionServer {
   }
 
   constructor(public readonly itemId: string) {
-    this.connection = new XMPPConnection(this.XMPP_HOST_NAME);
+    this.connection = new XMPPConnection(
+      this.XMPP_HOST_NAME,
+      ApplicationRunner.SNIPPER_XMPP_ID
+    );
   }
 
   startSellingItem() {
@@ -85,7 +92,13 @@ class FakeAuctionServer implements AuctionServer {
     });
   }
 
-  reportPrice(price: number, increment: number, bidder: string) {}
+  reportPrice(price: number, increment: number, bidder: string) {
+    this.currentChat?.sendMessage(
+      new Message(
+        `SOLVersion: 1.1; Event: PRICE; CurrentPrice: ${price}; Increment: ${increment}; Bidder: ${bidder};`
+      )
+    );
+  }
 
   announceClosed() {
     this.currentChat?.sendMessage(new Message());
@@ -96,11 +109,27 @@ class FakeAuctionServer implements AuctionServer {
     this.messageListener.clear();
   }
 
-  async hasReceivedJoinRequestFromSniper() {
-    await this.messageListener.receivesAMessage();
+  async hasReceivedJoinRequestFromSniper(sniperId: string) {
+    await this.receivesAMessageMatching(
+      sniperId,
+      expect.stringMatching(Main.JOIN_COMMAND_FORMAT)
+    );
   }
 
-  async hasReceivedBid(bid: number, sniperId: string) {}
+  async hasReceivedBid(bid: number, sniperId: string) {
+    await this.receivesAMessageMatching(
+      sniperId,
+      expect.stringMatching(Main.BID_COMMAND_FORMAT(bid))
+    );
+  }
+
+  private async receivesAMessageMatching(
+    sniperId: string,
+    messageMatcher: jest.CustomMatcher
+  ) {
+    await this.messageListener.receivesAMessage(messageMatcher);
+    expect(this.currentChat?.participant).toBe(sniperId);
+  }
 }
 
 class SingleMessageListener implements MessageListener {
@@ -110,9 +139,10 @@ class SingleMessageListener implements MessageListener {
     this.messages.add(message);
   }
 
-  async receivesAMessage() {
+  async receivesAMessage(messageMatcher: jest.CustomMatcher) {
     const message = await this.messages.poll(new Time(5, "second"));
     expect(message).not.toBeNull();
+    expect(message!.body).toEqual(messageMatcher);
   }
 
   clear() {
@@ -127,7 +157,7 @@ class SingleMessageListener implements MessageListener {
  * Instantiate the application and exercise it. Runs expectations.
  */
 class ApplicationRunner {
-  static readonly SNIPPER_XMPP_ID = "???";
+  static readonly SNIPPER_XMPP_ID = "Sniper XMPP ID";
   static readonly SNIPER_ID = "sniper";
   static readonly SNIPER_PASSWORD = "sniper";
 
@@ -155,7 +185,9 @@ class ApplicationRunner {
     await this.driver.showsSniperStatus(MainWindow.STATUS_LOST);
   }
 
-  async hasShownSniperIsBidding(): Promise<void> {}
+  async hasShownSniperIsBidding(): Promise<void> {
+    await this.driver.showsSniperStatus(MainWindow.STATUS_BIDDING);
+  }
 
   stop(): void {
     this.driver.dispose();

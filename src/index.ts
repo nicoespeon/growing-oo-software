@@ -9,6 +9,9 @@ export { Main, MainWindow };
 
 class Main {
   static readonly AUCTION_RESOURCE = "Auction";
+  static readonly JOIN_COMMAND_FORMAT = "SOL Version: 1.1; Command: JOIN;";
+  static readonly BID_COMMAND_FORMAT = (bid: number) =>
+    `SOL Version: 1.1; Command: BID; Price: ${bid};`;
   private ui: MainWindow;
 
   constructor() {
@@ -35,7 +38,7 @@ class Main {
         Main.auctionId(itemId, connection),
         new UIMessageListener(this.ui)
       );
-    chat.sendMessage(new Message());
+    chat.sendMessage(new Message(Main.JOIN_COMMAND_FORMAT));
   }
 
   private static connection(
@@ -57,6 +60,7 @@ class Main {
 
 class MainWindow {
   static readonly STATUS_JOINING = "joining";
+  static readonly STATUS_BIDDING = "bidding";
   static readonly STATUS_LOST = "lost";
 
   constructor() {

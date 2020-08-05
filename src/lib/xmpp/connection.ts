@@ -6,7 +6,10 @@ const connections = new Map<string, Connection>();
 class Connection {
   private chatManager: ChatManager | null = null;
 
-  constructor(private hostName: string) {
+  constructor(
+    private hostName: string,
+    private participant: string = "Participant not set"
+  ) {
     // TODO: This should be built with connect() and login() instead
     const existingConnection = connections.get(hostName);
     if (existingConnection) {
@@ -26,7 +29,7 @@ class Connection {
 
   getChatManager(): ChatManager {
     if (!this.chatManager) {
-      this.chatManager = new ChatManager();
+      this.chatManager = new ChatManager(this.participant);
     }
 
     return this.chatManager;
@@ -36,7 +39,11 @@ class Connection {
 }
 
 class ChatManager {
-  private chat = new Chat();
+  private chat: Chat;
+
+  constructor(participant: string) {
+    this.chat = new Chat(participant);
+  }
 
   addChatListener(listener: ChatListener) {
     listener.chatCreated(this.chat, true);
@@ -55,6 +62,8 @@ interface ChatListener {
 class Chat {
   private listeners: MessageListener[] = [];
 
+  constructor(public readonly participant: string) {}
+
   addMessageListener(listener: MessageListener) {
     this.listeners.push(listener);
   }
@@ -66,7 +75,9 @@ class Chat {
   }
 }
 
-class Message {}
+class Message {
+  constructor(public readonly body: string = "") {}
+}
 
 interface MessageListener {
   processMessage: (chat: Chat, message: Message) => void;
