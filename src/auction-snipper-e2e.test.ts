@@ -93,6 +93,7 @@ class FakeAuctionServer implements AuctionServer {
 
   stop() {
     this.connection.disconnect();
+    this.messageListener.clear();
   }
 
   async hasReceivedJoinRequestFromSniper() {
@@ -112,6 +113,10 @@ class SingleMessageListener implements MessageListener {
   async receivesAMessage() {
     const message = await this.messages.poll(new Time(5, "second"));
     expect(message).not.toBeNull();
+  }
+
+  clear() {
+    this.messages.clear();
   }
 }
 
