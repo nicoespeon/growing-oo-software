@@ -11,7 +11,7 @@ import { AuctionServer } from "./auction-server";
 import { Main, MainWindow } from "./index";
 
 describe("Auction Snipper", () => {
-  let auction: AuctionServer;
+  let auction: FakeAuctionServer;
   let application: ApplicationRunner;
 
   beforeAll(() => {
@@ -72,10 +72,6 @@ class FakeAuctionServer implements AuctionServer {
     });
   }
 
-  async hasReceivedJoinRequestFromSniper() {
-    await this.messageListener.receivesAMessage();
-  }
-
   announceClosed() {
     if (this.currentChat) {
       this.currentChat.sendMessage(new Message());
@@ -84,6 +80,10 @@ class FakeAuctionServer implements AuctionServer {
 
   stop() {
     this.connection.disconnect();
+  }
+
+  async hasReceivedJoinRequestFromSniper() {
+    await this.messageListener.receivesAMessage();
   }
 }
 
