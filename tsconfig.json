@@ -1,0 +1,39 @@
+{
+  "compilerOptions": {
+    /* Basic Options */
+    "target": "es5",
+    "module": "commonjs",
+
+    /* Strict Type-Checking Options */
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "noImplicitThis": true,
+    "alwaysStrict": true
+
+    /* Additional Checks */
+    // "noUnusedLocals": true,
+    // "noUnusedParameters": true,
+    // "noImplicitReturns": true,
+
+    /* Module Resolution Options */
+    // "moduleResolution": "node",
+    // "baseUrl": "./",
+    // "paths": {},
+    // "rootDirs": [],
+    // "typeRoots": [],
+    // "types": [],
+    // "allowSyntheticDefaultImports": true,
+    // "preserveSymlinks": true,
+
+    /* Source Map Options */
+    // "sourceRoot": "./",
+    // "mapRoot": "./",
+    // "inlineSourceMap": true,
+    // "inlineSources": true,
+
+    /* Experimental Options */
+    // "experimentalDecorators": true,
+    // "emitDecoratorMetadata": true,
+  }
+}
