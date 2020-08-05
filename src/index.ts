@@ -1,9 +1,4 @@
-import {
-  Connection as XMPPConnection,
-  Message,
-  MessageListener,
-  Chat,
-} from "./lib/xmpp";
+import { Connection as XMPPConnection, Message } from "./lib/xmpp";
 import { AuctionEventListener } from "./auction-event-listener";
 import { AuctionMessageTranslator } from "./auction-message-translator";
 
@@ -35,6 +30,10 @@ class Main implements AuctionEventListener {
 
   auctionClosed() {
     this.ui.showStatus(MainWindow.STATUS_LOST);
+  }
+
+  currentPrice() {
+    // TODO: implement
   }
 
   private joinAuction(connection: XMPPConnection, itemId: string) {
