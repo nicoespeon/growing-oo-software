@@ -101,7 +101,9 @@ class FakeAuctionServer implements AuctionServer {
   }
 
   announceClosed() {
-    this.currentChat?.sendMessage(new Message());
+    this.currentChat?.sendMessage(
+      new Message("SOL Version: 1.1; Event: CLOSE;")
+    );
   }
 
   stop() {
