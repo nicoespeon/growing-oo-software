@@ -14,7 +14,7 @@ describe("Auction Snipper", () => {
   let auction: FakeAuctionServer;
   let application: ApplicationRunner;
 
-  beforeAll(() => {
+  beforeEach(() => {
     // Even for E2E test we use a fake server because the actual one
     // from 3rd party is not easy to access => pragmatic choice!
     auction = new FakeAuctionServer("item-54387");
@@ -25,7 +25,7 @@ describe("Auction Snipper", () => {
     jest.setTimeout(10000);
   });
 
-  afterAll(() => {
+  afterEach(() => {
     auction.stop();
     application.stop();
   });
