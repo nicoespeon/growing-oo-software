@@ -88,9 +88,7 @@ class FakeAuctionServer implements AuctionServer {
   reportPrice(price: number, increment: number, bidder: string) {}
 
   announceClosed() {
-    if (this.currentChat) {
-      this.currentChat.sendMessage(new Message());
-    }
+    this.currentChat?.sendMessage(new Message());
   }
 
   stop() {
