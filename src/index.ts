@@ -58,7 +58,9 @@ class Main {
 class MainWindow {
   static readonly STATUS_JOINING = "joining";
   static readonly STATUS_BIDDING = "bidding";
+  static readonly STATUS_WINNING = "winning";
   static readonly STATUS_LOST = "lost";
+  static readonly STATUS_WON = "won";
 
   constructor() {
     process.stdout.write("Auction Sniper");

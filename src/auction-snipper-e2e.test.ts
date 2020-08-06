@@ -55,6 +55,24 @@ describe("Auction Snipper", () => {
     auction.announceClosed();
     await application.showsSniperHasLostAuction();
   });
+
+  it("should win an auction by bidding higher", async () => {
+    auction.startSellingItem();
+    await application.startBiddingIn(auction);
+    await auction.hasReceivedJoinRequestFromSniper(
+      ApplicationRunner.SNIPPER_XMPP_ID
+    );
+
+    auction.reportPrice(1000, 98, "other bidder");
+    await application.hasShownSniperIsBidding();
+    await auction.hasReceivedBid(1098, ApplicationRunner.SNIPPER_XMPP_ID);
+
+    auction.reportPrice(1098, 97, ApplicationRunner.SNIPPER_XMPP_ID);
+    await application.hasShownSniperIsWinning();
+
+    auction.announceClosed();
+    await application.showsSniperHasWonAuction();
+  });
 });
 
 class FakeAuctionServer implements AuctionServer {
@@ -189,8 +207,16 @@ class ApplicationRunner {
     await this.driver.showsSniperStatus(MainWindow.STATUS_LOST);
   }
 
+  async showsSniperHasWonAuction(): Promise<void> {
+    await this.driver.showsSniperStatus(MainWindow.STATUS_WON);
+  }
+
   async hasShownSniperIsBidding(): Promise<void> {
     await this.driver.showsSniperStatus(MainWindow.STATUS_BIDDING);
+  }
+
+  async hasShownSniperIsWinning(): Promise<void> {
+    await this.driver.showsSniperStatus(MainWindow.STATUS_WINNING);
   }
 
   stop(): void {
