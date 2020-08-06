@@ -4,12 +4,11 @@ export { Connection, Chat, Message, MessageListener };
 const connections = new Map<string, Connection>();
 
 class Connection {
-  private _username: string | null;
   private chatManager: ChatManager | null = null;
 
   constructor(
     private hostName: string,
-    private participant: string = "Participant not set"
+    public readonly user: string = "user not set"
   ) {
     // TODO: This should be built with connect() and login() instead
     const existingConnection = connections.get(hostName);
@@ -24,19 +23,13 @@ class Connection {
     return this.hostName;
   }
 
-  get user(): string {
-    return this._username || "no user connected";
-  }
-
   connect() {}
 
-  login(username: string, password: string, resource: string) {
-    this._username = username;
-  }
+  login(username: string, password: string, resource: string) {}
 
   getChatManager(): ChatManager {
     if (!this.chatManager) {
-      this.chatManager = new ChatManager(this.participant);
+      this.chatManager = new ChatManager(this.user);
     }
 
     return this.chatManager;

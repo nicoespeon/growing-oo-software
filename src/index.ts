@@ -6,6 +6,7 @@ import { Auction } from "./auction";
 export { Main, MainWindow };
 
 class Main {
+  static readonly SNIPER_XMPP_ID = "Sniper 1245";
   static readonly AUCTION_RESOURCE = "Auction";
   static readonly JOIN_COMMAND_FORMAT = "SOL Version: 1.1; Command: JOIN;";
   static readonly BID_COMMAND_FORMAT = (bid: number) =>
@@ -44,7 +45,7 @@ class Main {
     username: string,
     password: string
   ): XMPPConnection {
-    const connection = new XMPPConnection(hostName);
+    const connection = new XMPPConnection(hostName, Main.SNIPER_XMPP_ID);
     connection.connect();
     connection.login(username, password, Main.AUCTION_RESOURCE);
 
