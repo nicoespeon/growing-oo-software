@@ -34,7 +34,7 @@ class Main implements SniperListener {
   }
 
   sniperBidding() {
-    // TODO: implement
+    this.ui.showStatus(MainWindow.STATUS_BIDDING);
   }
 
   private joinAuction(connection: XMPPConnection, itemId: string) {
