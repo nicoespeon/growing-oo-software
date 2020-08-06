@@ -43,7 +43,7 @@ class Main implements SniperListener {
       .createChat(Main.auctionId(itemId, connection));
     chat.addMessageListener(
       new AuctionMessageTranslator(
-        new AuctionSniper(new ChatAuction(chat), this)
+        new AuctionSniper(new XMPPAuction(chat), this)
       )
     );
     chat.sendMessage(Main.JOIN_COMMAND_FORMAT);
@@ -81,7 +81,7 @@ class MainWindow {
   }
 }
 
-class ChatAuction implements Auction {
+class XMPPAuction implements Auction {
   constructor(private chat: Chat) {}
 
   bid(amount: number) {
