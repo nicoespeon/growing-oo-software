@@ -29,3 +29,10 @@ However, I still find it interesting to have an adapter between what an external
 The original example used Java Spring capabilities to make the application run. In JS, that's different.
 
 I didn't want to set up a server & a client, then to rely on the browser. Therefore, I kept it closer to the original implementation by implementing a CLI output instead. That's valid Node.js, it looks much like the Java example, so that should do it 👍
+
+## Thoughts while implementing
+
+- JS standard library has way less than the Java one! So many things to implement or fake…
+- A lot of time is spent in design, even when TDD. I'm surprised how many components we're identifying and creating early in the process. TDD doesn't mean you don't design before coding. It's more iterative though.
+- They recommend to put tests in a different package, but I do prefer keeping tests closer to the code. That's because of cohesion: I keep close together what I change together.
+- Jest has custom matchers too! I'm happy that I can be that expressive in my tests.
