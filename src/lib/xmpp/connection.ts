@@ -71,9 +71,9 @@ class Chat {
     this.listeners.push(listener);
   }
 
-  sendMessage(message: Message) {
+  sendMessage(message: string) {
     this.listeners.forEach((listener) =>
-      listener.processMessage(this, message)
+      listener.processMessage(this, new Message(message))
     );
   }
 }

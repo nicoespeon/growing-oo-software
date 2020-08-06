@@ -1,4 +1,4 @@
-import { Connection as XMPPConnection, Message, Chat } from "./lib/xmpp";
+import { Connection as XMPPConnection, Chat } from "./lib/xmpp";
 import { AuctionMessageTranslator } from "./auction-message-translator";
 import { SniperListener, AuctionSniper } from "./auction-sniper";
 import { Auction } from "./auction";
@@ -46,7 +46,7 @@ class Main implements SniperListener {
         new AuctionSniper(new ChatAuction(chat), this)
       )
     );
-    chat.sendMessage(new Message(Main.JOIN_COMMAND_FORMAT));
+    chat.sendMessage(Main.JOIN_COMMAND_FORMAT);
   }
 
   private static connection(
@@ -85,6 +85,6 @@ class ChatAuction implements Auction {
   constructor(private chat: Chat) {}
 
   bid(amount: number) {
-    this.chat.sendMessage(new Message(Main.BID_COMMAND_FORMAT(amount)));
+    this.chat.sendMessage(Main.BID_COMMAND_FORMAT(amount));
   }
 }

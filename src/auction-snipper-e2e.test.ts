@@ -94,16 +94,12 @@ class FakeAuctionServer implements AuctionServer {
 
   reportPrice(price: number, increment: number, bidder: string) {
     this.currentChat?.sendMessage(
-      new Message(
-        `SOLVersion: 1.1; Event: PRICE; CurrentPrice: ${price}; Increment: ${increment}; Bidder: ${bidder};`
-      )
+      `SOLVersion: 1.1; Event: PRICE; CurrentPrice: ${price}; Increment: ${increment}; Bidder: ${bidder};`
     );
   }
 
   announceClosed() {
-    this.currentChat?.sendMessage(
-      new Message("SOL Version: 1.1; Event: CLOSE;")
-    );
+    this.currentChat?.sendMessage("SOL Version: 1.1; Event: CLOSE;");
   }
 
   stop() {
