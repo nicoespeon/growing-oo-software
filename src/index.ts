@@ -41,12 +41,12 @@ class Main implements SniperListener {
     const chat = connection
       .getChatManager()
       .createChat(Main.auctionId(itemId, connection));
+
+    const auction = new XMPPAuction(chat);
     chat.addMessageListener(
-      new AuctionMessageTranslator(
-        new AuctionSniper(new XMPPAuction(chat), this)
-      )
+      new AuctionMessageTranslator(new AuctionSniper(auction, this))
     );
-    chat.sendMessage(Main.JOIN_COMMAND_FORMAT);
+    auction.join();
   }
 
   private static connection(
@@ -86,5 +86,9 @@ class XMPPAuction implements Auction {
 
   bid(amount: number) {
     this.chat.sendMessage(Main.BID_COMMAND_FORMAT(amount));
+  }
+
+  join() {
+    this.chat.sendMessage(Main.JOIN_COMMAND_FORMAT);
   }
 }
