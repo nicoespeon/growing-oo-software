@@ -35,7 +35,7 @@ class Main {
     chat.addMessageListener(
       new AuctionMessageTranslator(
         connection.user,
-        new AuctionSniper(auction, new SniperStateDisplayer())
+        new AuctionSniper(auction, new SniperStateDisplayer(), itemId)
       )
     );
     auction.join();
