@@ -34,7 +34,7 @@ describe("Auction Snipper", () => {
     auction.startSellingItem();
     await application.startBiddingIn(auction);
     await auction.hasReceivedJoinRequestFromSniper(
-      ApplicationRunner.SNIPPER_XMPP_ID
+      ApplicationRunner.SNIPER_XMPP_ID
     );
 
     auction.announceClosed();
@@ -45,12 +45,12 @@ describe("Auction Snipper", () => {
     auction.startSellingItem();
     await application.startBiddingIn(auction);
     await auction.hasReceivedJoinRequestFromSniper(
-      ApplicationRunner.SNIPPER_XMPP_ID
+      ApplicationRunner.SNIPER_XMPP_ID
     );
 
     auction.reportPrice(1000, 98, "other bidder");
     await application.hasShownSniperIsBidding();
-    await auction.hasReceivedBid(1098, ApplicationRunner.SNIPPER_XMPP_ID);
+    await auction.hasReceivedBid(1098, ApplicationRunner.SNIPER_XMPP_ID);
 
     auction.announceClosed();
     await application.showsSniperHasLostAuction();
@@ -60,14 +60,14 @@ describe("Auction Snipper", () => {
     auction.startSellingItem();
     await application.startBiddingIn(auction);
     await auction.hasReceivedJoinRequestFromSniper(
-      ApplicationRunner.SNIPPER_XMPP_ID
+      ApplicationRunner.SNIPER_XMPP_ID
     );
 
     auction.reportPrice(1000, 98, "other bidder");
     await application.hasShownSniperIsBidding();
-    await auction.hasReceivedBid(1098, ApplicationRunner.SNIPPER_XMPP_ID);
+    await auction.hasReceivedBid(1098, ApplicationRunner.SNIPER_XMPP_ID);
 
-    auction.reportPrice(1098, 97, ApplicationRunner.SNIPPER_XMPP_ID);
+    auction.reportPrice(1098, 97, ApplicationRunner.SNIPER_XMPP_ID);
     await application.hasShownSniperIsWinning();
 
     auction.announceClosed();
@@ -91,7 +91,7 @@ class FakeAuctionServer implements AuctionServer {
   constructor(public readonly itemId: string) {
     this.connection = new XMPPConnection(
       this.XMPP_HOST_NAME,
-      ApplicationRunner.SNIPPER_XMPP_ID
+      ApplicationRunner.SNIPER_XMPP_ID
     );
   }
 
@@ -179,7 +179,7 @@ class SingleMessageListener implements MessageListener {
  * Instantiate the application and exercise it. Runs expectations.
  */
 class ApplicationRunner {
-  static readonly SNIPPER_XMPP_ID = "Sniper XMPP ID";
+  static readonly SNIPER_XMPP_ID = "Sniper XMPP ID";
   static readonly SNIPER_ID = "sniper";
   static readonly SNIPER_PASSWORD = "sniper";
 
