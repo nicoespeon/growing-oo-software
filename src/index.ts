@@ -32,12 +32,16 @@ class Main implements SniperListener {
     this.ui.showStatus(MainWindow.STATUS_LOST);
   }
 
+  sniperBidding() {
+    // TODO: implement
+  }
+
   private joinAuction(connection: XMPPConnection, itemId: string) {
     const chat = connection
       .getChatManager()
       .createChat(
         Main.auctionId(itemId, connection),
-        new AuctionMessageTranslator(new AuctionSniper(this))
+        new AuctionMessageTranslator(new AuctionSniper(null, this))
       );
     chat.sendMessage(new Message(Main.JOIN_COMMAND_FORMAT));
   }
