@@ -1,6 +1,7 @@
 import { Connection as XMPPConnection, Message } from "./lib/xmpp";
 import { AuctionMessageTranslator } from "./auction-message-translator";
 import { SniperListener, AuctionSniper } from "./auction-sniper";
+import { Auction } from "./auction";
 
 export { Main, MainWindow };
 
@@ -41,7 +42,7 @@ class Main implements SniperListener {
       .getChatManager()
       .createChat(
         Main.auctionId(itemId, connection),
-        new AuctionMessageTranslator(new AuctionSniper(null, this))
+        new AuctionMessageTranslator(new AuctionSniper(new NullAuction(), this))
       );
     chat.sendMessage(new Message(Main.JOIN_COMMAND_FORMAT));
   }
@@ -76,4 +77,8 @@ class MainWindow {
   showStatus(status: string) {
     process.stdout.write(status);
   }
+}
+
+class NullAuction implements Auction {
+  bid() {}
 }
