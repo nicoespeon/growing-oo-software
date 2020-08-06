@@ -134,6 +134,12 @@ class SingleMessageListener implements MessageListener {
   private messages = new BlockingQueue<Message>(1);
 
   processMessage(_chat: Chat, message: Message) {
+    // Our fake auction server also sends messages that aren't consumed.
+    // If we don't clear the queue, it won't poll the application messages.
+    if (this.messages.remainingCapacity === 0) {
+      this.messages.clear();
+    }
+
     this.messages.add(message);
   }
 
