@@ -49,8 +49,11 @@ class ChatManager {
     listener.chatCreated(this.chat, true);
   }
 
-  createChat(id: string, listener: MessageListener): Chat {
-    this.chat.addMessageListener(listener);
+  createChat(id: string, listener?: MessageListener): Chat {
+    if (listener) {
+      this.chat.addMessageListener(listener);
+    }
+
     return this.chat;
   }
 }
