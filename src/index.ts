@@ -32,6 +32,7 @@ class Main {
     const auction = new XMPPAuction(chat);
     chat.addMessageListener(
       new AuctionMessageTranslator(
+        connection.user,
         new AuctionSniper(auction, new SniperStateDisplayer())
       )
     );

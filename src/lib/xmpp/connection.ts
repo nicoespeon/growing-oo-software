@@ -4,6 +4,7 @@ export { Connection, Chat, Message, MessageListener };
 const connections = new Map<string, Connection>();
 
 class Connection {
+  private _username: string | null;
   private chatManager: ChatManager | null = null;
 
   constructor(
@@ -23,9 +24,15 @@ class Connection {
     return this.hostName;
   }
 
+  get user(): string {
+    return this._username || "no user connected";
+  }
+
   connect() {}
 
-  login(login: string, password: string, resource: string) {}
+  login(username: string, password: string, resource: string) {
+    this._username = username;
+  }
 
   getChatManager(): ChatManager {
     if (!this.chatManager) {

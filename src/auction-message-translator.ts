@@ -1,10 +1,13 @@
 import { Message, Chat } from "./lib/xmpp";
-import { AuctionEventListener } from "./auction-event-listener";
+import { AuctionEventListener, PriceSource } from "./auction-event-listener";
 
 export { AuctionMessageTranslator };
 
 class AuctionMessageTranslator {
-  constructor(private listener: AuctionEventListener) {}
+  constructor(
+    private readonly sniperId: string,
+    private listener: AuctionEventListener
+  ) {}
 
   processMessage(chat: Chat | null, message: Message) {
     const event = AuctionEvent.from(message.body);
@@ -15,7 +18,11 @@ class AuctionMessageTranslator {
         break;
 
       case "PRICE":
-        this.listener.currentPrice(event.currentPrice, event.increment);
+        this.listener.currentPrice(
+          event.currentPrice,
+          event.increment,
+          event.isFrom(this.sniperId)
+        );
         break;
     }
   }
@@ -34,6 +41,16 @@ class AuctionEvent {
 
   get increment(): number {
     return this.getInt("Increment");
+  }
+
+  isFrom(sniperId: string): PriceSource {
+    return sniperId === this.bidder
+      ? PriceSource.FromSniper
+      : PriceSource.FromOtherBidder;
+  }
+
+  private get bidder(): string {
+    return this.get("Bidder");
   }
 
   private getInt(fieldName: string): number {
