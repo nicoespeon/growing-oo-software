@@ -11,22 +11,26 @@ interface SniperListener {
 }
 
 class AuctionSniper implements AuctionEventListener {
+  private isWinning = false;
+
   constructor(private auction: Auction, private listener: SniperListener) {}
 
   auctionClosed() {
-    this.listener.sniperLost();
+    if (this.isWinning) {
+      this.listener.sniperWon();
+    } else {
+      this.listener.sniperLost();
+    }
   }
 
   currentPrice(price: number, increment: number, source: PriceSource) {
-    switch (source) {
-      case PriceSource.FromSniper:
-        this.listener.sniperWinning();
-        break;
+    this.isWinning = source === PriceSource.FromSniper;
 
-      case PriceSource.FromOtherBidder:
-        this.auction.bid(price + increment);
-        this.listener.sniperBidding();
-        break;
+    if (this.isWinning) {
+      this.listener.sniperWinning();
+    } else {
+      this.auction.bid(price + increment);
+      this.listener.sniperBidding();
     }
   }
 }
