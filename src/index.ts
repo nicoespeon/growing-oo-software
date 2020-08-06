@@ -1,10 +1,10 @@
 import { Connection as XMPPConnection, Message } from "./lib/xmpp";
-import { AuctionEventListener } from "./auction-event-listener";
 import { AuctionMessageTranslator } from "./auction-message-translator";
+import { SniperListener, AuctionSniper } from "./auction-sniper";
 
 export { Main, MainWindow };
 
-class Main implements AuctionEventListener {
+class Main implements SniperListener {
   static readonly AUCTION_RESOURCE = "Auction";
   static readonly JOIN_COMMAND_FORMAT = "SOL Version: 1.1; Command: JOIN;";
   static readonly BID_COMMAND_FORMAT = (bid: number) =>
@@ -28,12 +28,8 @@ class Main implements AuctionEventListener {
     );
   }
 
-  auctionClosed() {
+  sniperLost() {
     this.ui.showStatus(MainWindow.STATUS_LOST);
-  }
-
-  currentPrice() {
-    // TODO: implement
   }
 
   private joinAuction(connection: XMPPConnection, itemId: string) {
@@ -41,7 +37,7 @@ class Main implements AuctionEventListener {
       .getChatManager()
       .createChat(
         Main.auctionId(itemId, connection),
-        new AuctionMessageTranslator(this)
+        new AuctionMessageTranslator(new AuctionSniper(this))
       );
     chat.sendMessage(new Message(Main.JOIN_COMMAND_FORMAT));
   }
