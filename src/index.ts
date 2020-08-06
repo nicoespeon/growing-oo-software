@@ -5,16 +5,11 @@ import { Auction } from "./auction";
 
 export { Main, MainWindow };
 
-class Main implements SniperListener {
+class Main {
   static readonly AUCTION_RESOURCE = "Auction";
   static readonly JOIN_COMMAND_FORMAT = "SOL Version: 1.1; Command: JOIN;";
   static readonly BID_COMMAND_FORMAT = (bid: number) =>
     `SOL Version: 1.1; Command: BID; Price: ${bid};`;
-  private ui: MainWindow;
-
-  constructor() {
-    this.ui = new MainWindow();
-  }
 
   static main(
     hostName: string,
@@ -29,14 +24,6 @@ class Main implements SniperListener {
     );
   }
 
-  sniperLost() {
-    this.ui.showStatus(MainWindow.STATUS_LOST);
-  }
-
-  sniperBidding() {
-    this.ui.showStatus(MainWindow.STATUS_BIDDING);
-  }
-
   private joinAuction(connection: XMPPConnection, itemId: string) {
     const chat = connection
       .getChatManager()
@@ -44,7 +31,9 @@ class Main implements SniperListener {
 
     const auction = new XMPPAuction(chat);
     chat.addMessageListener(
-      new AuctionMessageTranslator(new AuctionSniper(auction, this))
+      new AuctionMessageTranslator(
+        new AuctionSniper(auction, new SniperStateDisplayer())
+      )
     );
     auction.join();
   }
@@ -90,5 +79,21 @@ class XMPPAuction implements Auction {
 
   join() {
     this.chat.sendMessage(Main.JOIN_COMMAND_FORMAT);
+  }
+}
+
+class SniperStateDisplayer implements SniperListener {
+  private ui: MainWindow;
+
+  constructor() {
+    this.ui = new MainWindow();
+  }
+
+  sniperLost() {
+    this.ui.showStatus(MainWindow.STATUS_LOST);
+  }
+
+  sniperBidding() {
+    this.ui.showStatus(MainWindow.STATUS_BIDDING);
   }
 }
