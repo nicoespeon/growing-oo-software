@@ -7,32 +7,61 @@ class AuctionMessageTranslator {
   constructor(private listener: AuctionEventListener) {}
 
   processMessage(chat: Chat | null, message: Message) {
-    const event = this.unpackEventFrom(message);
+    const event = AuctionEvent.from(message.body);
 
-    switch (event.get("Event")) {
+    switch (event.type) {
       case "CLOSE":
         this.listener.auctionClosed();
         break;
 
       case "PRICE":
-        this.listener.currentPrice(
-          parseInt(event.get("CurrentPrice") || "0"),
-          parseInt(event.get("Increment") || "0")
-        );
+        this.listener.currentPrice(event.currentPrice, event.increment);
         break;
     }
   }
+}
 
-  private unpackEventFrom(message: Message): Map<string, string> {
-    const event = new Map<string, string>();
+class AuctionEvent {
+  private fields = new Map<string, string>();
 
-    for (let element of message.body.split(";")) {
-      const [key, value] = element.split(":");
-      if (value) {
-        event.set(key.trim(), value.trim());
-      }
+  get type(): string {
+    return this.get("Event");
+  }
+
+  get currentPrice(): number {
+    return this.getInt("CurrentPrice");
+  }
+
+  get increment(): number {
+    return this.getInt("Increment");
+  }
+
+  private getInt(fieldName: string): number {
+    return parseInt(this.get(fieldName));
+  }
+
+  private get(fieldName: string): string {
+    return this.fields.get(fieldName) || "";
+  }
+
+  static from(messageBody: string): AuctionEvent {
+    const event = new AuctionEvent();
+
+    for (let field of this.fieldsIn(messageBody)) {
+      event.addField(field);
     }
 
     return event;
+  }
+
+  static fieldsIn(messageBody: string): string[] {
+    return messageBody.split(";");
+  }
+
+  private addField(field: string) {
+    const [key, value] = field.split(":");
+    if (value) {
+      this.fields.set(key.trim(), value.trim());
+    }
   }
 }
