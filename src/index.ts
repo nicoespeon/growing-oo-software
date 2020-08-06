@@ -97,6 +97,10 @@ class SniperStateDisplayer implements SniperListener {
     this.ui.showStatus(MainWindow.STATUS_LOST);
   }
 
+  sniperWon() {
+    this.ui.showStatus(MainWindow.STATUS_WON);
+  }
+
   sniperBidding() {
     this.ui.showStatus(MainWindow.STATUS_BIDDING);
   }

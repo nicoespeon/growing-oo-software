@@ -3,7 +3,7 @@ import { Auction } from "./auction";
 import { PriceSource } from "./auction-event-listener";
 
 describe("AuctionSniper", () => {
-  it("should report lost when auction closes", () => {
+  it("should report lost when auction closes immediately", () => {
     const auction = new FakeAuction();
     const sniperListener = new FakeSniperListener();
     const sniper = new AuctionSniper(auction, sniperListener);
@@ -36,10 +36,39 @@ describe("AuctionSniper", () => {
 
     expect(sniperListener.sniperWinning).toBeCalled();
   });
+
+  it("should report lost if auction closes when bidding", () => {
+    const auction = new FakeAuction();
+    const sniperListener = new FakeSniperListener();
+    let state = "fresh";
+    sniperListener.sniperBidding.mockImplementation(() => (state = "bidding"));
+    const sniper = new AuctionSniper(auction, sniperListener);
+
+    sniper.currentPrice(123, 45, PriceSource.FromOtherBidder);
+    sniper.auctionClosed();
+
+    expect(sniperListener.sniperLost).toBeCalled();
+    expect(state).toBe("bidding");
+  });
+
+  it("should report won if auction closes when winning", () => {
+    const auction = new FakeAuction();
+    const sniperListener = new FakeSniperListener();
+    let state = "fresh";
+    sniperListener.sniperWinning.mockImplementation(() => (state = "winning"));
+    const sniper = new AuctionSniper(auction, sniperListener);
+
+    sniper.currentPrice(123, 45, PriceSource.FromSniper);
+    sniper.auctionClosed();
+
+    expect(sniperListener.sniperWon).toBeCalled();
+    expect(state).toBe("winning");
+  });
 });
 
 class FakeSniperListener implements SniperListener {
   sniperLost = jest.fn();
+  sniperWon = jest.fn();
   sniperBidding = jest.fn();
   sniperWinning = jest.fn();
 }

@@ -5,6 +5,7 @@ export { SniperListener, AuctionSniper };
 
 interface SniperListener {
   sniperLost: () => void;
+  sniperWon: () => void;
   sniperBidding: () => void;
   sniperWinning: () => void;
 }
