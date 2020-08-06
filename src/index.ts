@@ -1,4 +1,4 @@
-import { Connection as XMPPConnection, Message } from "./lib/xmpp";
+import { Connection as XMPPConnection, Message, Chat } from "./lib/xmpp";
 import { AuctionMessageTranslator } from "./auction-message-translator";
 import { SniperListener, AuctionSniper } from "./auction-sniper";
 import { Auction } from "./auction";
@@ -40,10 +40,12 @@ class Main implements SniperListener {
   private joinAuction(connection: XMPPConnection, itemId: string) {
     const chat = connection
       .getChatManager()
-      .createChat(
-        Main.auctionId(itemId, connection),
-        new AuctionMessageTranslator(new AuctionSniper(new NullAuction(), this))
-      );
+      .createChat(Main.auctionId(itemId, connection));
+    chat.addMessageListener(
+      new AuctionMessageTranslator(
+        new AuctionSniper(new ChatAuction(chat), this)
+      )
+    );
     chat.sendMessage(new Message(Main.JOIN_COMMAND_FORMAT));
   }
 
@@ -79,6 +81,10 @@ class MainWindow {
   }
 }
 
-class NullAuction implements Auction {
-  bid() {}
+class ChatAuction implements Auction {
+  constructor(private chat: Chat) {}
+
+  bid(amount: number) {
+    this.chat.sendMessage(new Message(Main.BID_COMMAND_FORMAT(amount)));
+  }
 }

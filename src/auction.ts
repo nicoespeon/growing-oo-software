@@ -1,5 +1,5 @@
 export { Auction };
 
 interface Auction {
-  bid: (newPrice: number) => void;
+  bid: (amount: number) => void;
 }
