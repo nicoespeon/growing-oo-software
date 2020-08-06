@@ -15,5 +15,8 @@ class AuctionSniper implements AuctionEventListener {
     this.listener.sniperLost();
   }
 
-  currentPrice(price: number, increment: number) {}
+  currentPrice(price: number, increment: number) {
+    this.auction.bid(price + increment);
+    this.listener.sniperBidding();
+  }
 }
