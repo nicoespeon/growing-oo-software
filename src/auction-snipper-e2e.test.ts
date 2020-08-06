@@ -49,7 +49,7 @@ describe("Auction Snipper", () => {
     );
 
     auction.reportPrice(1000, 98, "other bidder");
-    await application.hasShownSniperIsBidding();
+    await application.hasShownSniperIsBidding(1000, 98);
     await auction.hasReceivedBid(1098, ApplicationRunner.SNIPER_XMPP_ID);
 
     auction.announceClosed();
@@ -64,14 +64,14 @@ describe("Auction Snipper", () => {
     );
 
     auction.reportPrice(1000, 98, "other bidder");
-    await application.hasShownSniperIsBidding();
+    await application.hasShownSniperIsBidding(1000, 98);
     await auction.hasReceivedBid(1098, ApplicationRunner.SNIPER_XMPP_ID);
 
     auction.reportPrice(1098, 97, ApplicationRunner.SNIPER_XMPP_ID);
-    await application.hasShownSniperIsWinning();
+    await application.hasShownSniperIsWinning(1098);
 
     auction.announceClosed();
-    await application.showsSniperHasWonAuction();
+    await application.showsSniperHasWonAuction(1098);
   });
 });
 
@@ -184,12 +184,14 @@ class ApplicationRunner {
   static readonly SNIPER_PASSWORD = "sniper";
 
   private driver: AuctionSniperDriver;
+  private itemId = "item ID not set";
 
   constructor() {
     this.driver = new AuctionSniperDriver(1000);
   }
 
   async startBiddingIn(auction: AuctionServer): Promise<void> {
+    this.itemId = auction.itemId;
     const thread = new Thread("Test Application", () => {
       Main.main(
         auction.XMPP_HOST_NAME,
@@ -207,16 +209,34 @@ class ApplicationRunner {
     await this.driver.showsSniperStatus(MainWindow.STATUS_LOST);
   }
 
-  async showsSniperHasWonAuction(): Promise<void> {
-    await this.driver.showsSniperStatus(MainWindow.STATUS_WON);
+  async showsSniperHasWonAuction(lastPrice: number): Promise<void> {
+    await this.driver.showsSniperStatus(
+      this.itemId,
+      lastPrice,
+      lastPrice,
+      MainWindow.STATUS_WON
+    );
   }
 
-  async hasShownSniperIsBidding(): Promise<void> {
-    await this.driver.showsSniperStatus(MainWindow.STATUS_BIDDING);
+  async hasShownSniperIsBidding(
+    lastPrice: number,
+    lastBid: number
+  ): Promise<void> {
+    await this.driver.showsSniperStatus(
+      this.itemId,
+      lastPrice,
+      lastBid,
+      MainWindow.STATUS_BIDDING
+    );
   }
 
-  async hasShownSniperIsWinning(): Promise<void> {
-    await this.driver.showsSniperStatus(MainWindow.STATUS_WINNING);
+  async hasShownSniperIsWinning(winningBid: number): Promise<void> {
+    await this.driver.showsSniperStatus(
+      this.itemId,
+      winningBid,
+      winningBid,
+      MainWindow.STATUS_WINNING
+    );
   }
 
   stop(): void {
@@ -231,8 +251,15 @@ class AuctionSniperDriver {
     this.driver = new CLIDriver(timeoutInMs);
   }
 
-  async showsSniperStatus(status: string): Promise<void> {
-    await this.driver.hasText(status);
+  async showsSniperStatus(itemId: string): Promise<void>;
+  async showsSniperStatus(
+    itemId: string,
+    lastPrice: number,
+    lastBid: number,
+    status: string
+  ): Promise<void>;
+  async showsSniperStatus(...args: (string | number)[]): Promise<void> {
+    await this.driver.hasTexts(args.map(String));
   }
 
   dispose(): void {
@@ -249,11 +276,12 @@ class CLIDriver {
     this.stdout = jest.spyOn(process.stdout, "write");
   }
 
-  async hasText(text: string): Promise<void> {
+  async hasTexts(texts: string[]): Promise<void> {
     // TODO: improve to resolve asap
     await wait(this.timeout);
-    // TODO: improve to test containing string
-    expect(this.stdout).toBeCalledWith(text);
+    texts.forEach((text) =>
+      expect(this.stdout).toBeCalledWith(expect.stringContaining(text))
+    );
   }
 
   dispose(): void {

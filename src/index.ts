@@ -2,6 +2,7 @@ import { Connection as XMPPConnection, Chat } from "./lib/xmpp";
 import { AuctionMessageTranslator } from "./auction-message-translator";
 import { SniperListener, AuctionSniper } from "./auction-sniper";
 import { Auction } from "./auction";
+import { SniperState } from "./sniper-state";
 
 export { Main, MainWindow };
 
@@ -72,6 +73,12 @@ class MainWindow {
   showStatus(status: string) {
     process.stdout.write(status);
   }
+
+  sniperStatusChanged(state: SniperState, status: string) {
+    process.stdout.write(
+      `${state.itemId} - ${state.lastPrice} - ${state.lastBid} - ${status}`
+    );
+  }
 }
 
 class XMPPAuction implements Auction {
@@ -101,8 +108,8 @@ class SniperStateDisplayer implements SniperListener {
     this.ui.showStatus(MainWindow.STATUS_WON);
   }
 
-  sniperBidding() {
-    this.ui.showStatus(MainWindow.STATUS_BIDDING);
+  sniperBidding(state: SniperState) {
+    this.ui.sniperStatusChanged(state, MainWindow.STATUS_BIDDING);
   }
 
   sniperWinning() {
