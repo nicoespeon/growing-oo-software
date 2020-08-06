@@ -26,11 +26,22 @@ describe("AuctionSniper", () => {
     expect(auction.bid).toBeCalledWith(price + increment);
     expect(sniperListener.sniperBidding).toBeCalled();
   });
+
+  it("should report winning when new price arrives from sniper", () => {
+    const auction = new FakeAuction();
+    const sniperListener = new FakeSniperListener();
+    const sniper = new AuctionSniper(auction, sniperListener);
+
+    sniper.currentPrice(1001, 25, PriceSource.FromSniper);
+
+    expect(sniperListener.sniperWinning).toBeCalled();
+  });
 });
 
 class FakeSniperListener implements SniperListener {
   sniperLost = jest.fn();
   sniperBidding = jest.fn();
+  sniperWinning = jest.fn();
 }
 
 class FakeAuction implements Auction {

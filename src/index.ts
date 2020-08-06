@@ -99,4 +99,8 @@ class SniperStateDisplayer implements SniperListener {
   sniperBidding() {
     this.ui.showStatus(MainWindow.STATUS_BIDDING);
   }
+
+  sniperWinning() {
+    this.ui.showStatus(MainWindow.STATUS_WINNING);
+  }
 }
