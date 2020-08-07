@@ -38,10 +38,21 @@ describe("AuctionSniper", () => {
     const auction = new FakeAuction();
     const sniperListener = new FakeSniperListener();
     const sniper = new AuctionSniper(auction, sniperListener, ITEM_ID);
+    let state = "fresh";
+    sniperListener.sniperStateChanged.mockImplementationOnce(
+      (snapshot: SniperSnapshot) => {
+        expect(snapshot.state).toBe(SniperState.BIDDING);
+        state = "bidding";
+      }
+    );
 
-    sniper.currentPrice(1001, 25, PriceSource.FromSniper);
+    sniper.currentPrice(1001, 25, PriceSource.FromOtherBidder);
+    sniper.currentPrice(1026, 25, PriceSource.FromSniper);
 
-    expect(sniperListener.sniperWinning).toBeCalled();
+    expect(sniperListener.sniperStateChanged).toBeCalledWith(
+      new SniperSnapshot(ITEM_ID, 1026, 1026, SniperState.WINNING)
+    );
+    expect(state).toBe("bidding");
   });
 
   it("should report lost if auction closes when bidding", () => {
@@ -67,7 +78,9 @@ describe("AuctionSniper", () => {
     const auction = new FakeAuction();
     const sniperListener = new FakeSniperListener();
     let state = "fresh";
-    sniperListener.sniperWinning.mockImplementation(() => (state = "winning"));
+    sniperListener.sniperStateChanged.mockImplementation(
+      () => (state = "winning")
+    );
     const sniper = new AuctionSniper(auction, sniperListener, ITEM_ID);
 
     sniper.currentPrice(123, 45, PriceSource.FromSniper);
@@ -82,7 +95,6 @@ class FakeSniperListener implements SniperListener {
   sniperLost = jest.fn();
   sniperWon = jest.fn();
   sniperStateChanged = jest.fn();
-  sniperWinning = jest.fn();
 }
 
 class FakeAuction implements Auction {

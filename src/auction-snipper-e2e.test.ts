@@ -9,6 +9,7 @@ import {
 } from "./lib/xmpp";
 import { AuctionServer } from "./auction-server";
 import { Main, MainWindow } from "./index";
+import { SniperState } from "./sniper-state";
 
 describe("Auction Snipper", () => {
   let auction: FakeAuctionServer;
@@ -202,11 +203,11 @@ class ApplicationRunner {
     });
     thread.start();
 
-    await this.driver.showsSniperStatus(MainWindow.STATUS_JOINING);
+    await this.driver.showsSniperStatus(SniperState.JOINING);
   }
 
   async showsSniperHasLostAuction(): Promise<void> {
-    await this.driver.showsSniperStatus(MainWindow.STATUS_LOST);
+    await this.driver.showsSniperStatus(SniperState.LOST);
   }
 
   async showsSniperHasWonAuction(lastPrice: number): Promise<void> {
@@ -214,7 +215,7 @@ class ApplicationRunner {
       this.itemId,
       lastPrice,
       lastPrice,
-      MainWindow.STATUS_WON
+      SniperState.WON
     );
   }
 
@@ -226,7 +227,7 @@ class ApplicationRunner {
       this.itemId,
       lastPrice,
       lastBid,
-      MainWindow.STATUS_BIDDING
+      SniperState.BIDDING
     );
   }
 
@@ -235,7 +236,7 @@ class ApplicationRunner {
       this.itemId,
       winningBid,
       winningBid,
-      MainWindow.STATUS_WINNING
+      SniperState.WINNING
     );
   }
 

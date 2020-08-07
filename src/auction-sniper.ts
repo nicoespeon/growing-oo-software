@@ -1,7 +1,6 @@
 import { AuctionEventListener, PriceSource } from "./auction-event-listener";
 import { Auction } from "./auction";
 import { SniperSnapshot } from "./sniper-snapshot";
-import { SniperState } from "./sniper-state";
 
 export { SniperListener, AuctionSniper };
 
@@ -9,17 +8,19 @@ interface SniperListener {
   sniperLost: () => void;
   sniperWon: () => void;
   sniperStateChanged: (snapshot: SniperSnapshot) => void;
-  sniperWinning: () => void;
 }
 
 class AuctionSniper implements AuctionEventListener {
   private isWinning = false;
+  private snapshot: SniperSnapshot;
 
   constructor(
     private auction: Auction,
     private listener: SniperListener,
-    private readonly itemId: string
-  ) {}
+    itemId: string
+  ) {
+    this.snapshot = SniperSnapshot.joining(itemId);
+  }
 
   auctionClosed() {
     if (this.isWinning) {
@@ -33,13 +34,13 @@ class AuctionSniper implements AuctionEventListener {
     this.isWinning = source === PriceSource.FromSniper;
 
     if (this.isWinning) {
-      this.listener.sniperWinning();
+      this.snapshot = this.snapshot.winning(price);
     } else {
       const bid = price + increment;
       this.auction.bid(bid);
-      this.listener.sniperStateChanged(
-        new SniperSnapshot(this.itemId, price, bid, SniperState.BIDDING)
-      );
+      this.snapshot = this.snapshot.bidding(price, bid);
     }
+
+    this.listener.sniperStateChanged(this.snapshot);
   }
 }

@@ -60,8 +60,6 @@ class Main {
 
 class MainWindow {
   static readonly STATUS_JOINING = "joining";
-  static readonly STATUS_BIDDING = "bidding";
-  static readonly STATUS_WINNING = "winning";
   static readonly STATUS_LOST = "lost";
   static readonly STATUS_WON = "won";
 
@@ -74,9 +72,9 @@ class MainWindow {
     process.stdout.write(status);
   }
 
-  sniperStatusChanged(snapshot: SniperSnapshot, status: string) {
+  sniperStatusChanged(snapshot: SniperSnapshot) {
     process.stdout.write(
-      `${snapshot.itemId} - ${snapshot.lastPrice} - ${snapshot.lastBid} - ${status}`
+      `${snapshot.itemId} - ${snapshot.lastPrice} - ${snapshot.lastBid} - ${snapshot.state}`
     );
   }
 }
@@ -109,10 +107,6 @@ class SniperStateDisplayer implements SniperListener {
   }
 
   sniperStateChanged(snapshot: SniperSnapshot) {
-    this.ui.sniperStatusChanged(snapshot, MainWindow.STATUS_BIDDING);
-  }
-
-  sniperWinning() {
-    this.ui.showStatus(MainWindow.STATUS_WINNING);
+    this.ui.sniperStatusChanged(snapshot);
   }
 }
