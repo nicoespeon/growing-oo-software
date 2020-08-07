@@ -36,3 +36,5 @@ I didn't want to set up a server & a client, then to rely on the browser. Theref
 - A lot of time is spent in design, even when TDD. I'm surprised how many components we're identifying and creating early in the process. TDD doesn't mean you don't design before coding. It's more iterative though.
 - They recommend to put tests in a different package, but I do prefer keeping tests closer to the code. That's because of cohesion: I keep close together what I change together.
 - Jest has custom matchers too! I'm happy that I can be that expressive in my tests.
+- Once past the first setup, everything becomes easy to change and we're making steady progress.
+- There are some gaps in the book that need to be filled when reproducing the code. The fact I'm adapting to TypeScript accentuates this.
