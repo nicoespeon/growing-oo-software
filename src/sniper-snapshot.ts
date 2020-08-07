@@ -1,6 +1,6 @@
-export { SniperState };
+export { SniperSnapshot };
 
-class SniperState {
+class SniperSnapshot {
   constructor(
     public readonly itemId: string,
     public readonly lastPrice: number,

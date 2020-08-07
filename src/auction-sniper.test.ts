@@ -1,7 +1,7 @@
 import { SniperListener, AuctionSniper } from "./auction-sniper";
 import { Auction } from "./auction";
 import { PriceSource } from "./auction-event-listener";
-import { SniperState } from "./sniper-state";
+import { SniperSnapshot } from "./sniper-snapshot";
 
 describe("AuctionSniper", () => {
   const ITEM_ID = "item ID";
@@ -29,7 +29,7 @@ describe("AuctionSniper", () => {
     expect(auction.bid).toBeCalledTimes(1);
     expect(auction.bid).toBeCalledWith(bid);
     expect(sniperListener.sniperBidding).toBeCalledWith(
-      new SniperState(ITEM_ID, price, bid)
+      new SniperSnapshot(ITEM_ID, price, bid)
     );
   });
 
