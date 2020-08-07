@@ -2,6 +2,7 @@ import { SniperListener, AuctionSniper } from "./auction-sniper";
 import { Auction } from "./auction";
 import { PriceSource } from "./auction-event-listener";
 import { SniperSnapshot } from "./sniper-snapshot";
+import { SniperState } from "./sniper-state";
 
 describe("AuctionSniper", () => {
   const ITEM_ID = "item ID";
@@ -28,8 +29,8 @@ describe("AuctionSniper", () => {
 
     expect(auction.bid).toBeCalledTimes(1);
     expect(auction.bid).toBeCalledWith(bid);
-    expect(sniperListener.sniperBidding).toBeCalledWith(
-      new SniperSnapshot(ITEM_ID, price, bid)
+    expect(sniperListener.sniperStateChanged).toBeCalledWith(
+      new SniperSnapshot(ITEM_ID, price, bid, SniperState.BIDDING)
     );
   });
 
@@ -47,7 +48,12 @@ describe("AuctionSniper", () => {
     const auction = new FakeAuction();
     const sniperListener = new FakeSniperListener();
     let state = "fresh";
-    sniperListener.sniperBidding.mockImplementation(() => (state = "bidding"));
+    sniperListener.sniperStateChanged.mockImplementation(
+      (snapshot: SniperSnapshot) => {
+        expect(snapshot.state).toBe(SniperState.BIDDING);
+        state = "bidding";
+      }
+    );
     const sniper = new AuctionSniper(auction, sniperListener, ITEM_ID);
 
     sniper.currentPrice(123, 45, PriceSource.FromOtherBidder);
@@ -75,7 +81,7 @@ describe("AuctionSniper", () => {
 class FakeSniperListener implements SniperListener {
   sniperLost = jest.fn();
   sniperWon = jest.fn();
-  sniperBidding = jest.fn();
+  sniperStateChanged = jest.fn();
   sniperWinning = jest.fn();
 }
 

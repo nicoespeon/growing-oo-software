@@ -108,7 +108,7 @@ class SniperStateDisplayer implements SniperListener {
     this.ui.showStatus(MainWindow.STATUS_WON);
   }
 
-  sniperBidding(snapshot: SniperSnapshot) {
+  sniperStateChanged(snapshot: SniperSnapshot) {
     this.ui.sniperStatusChanged(snapshot, MainWindow.STATUS_BIDDING);
   }
 
