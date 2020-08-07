@@ -13,12 +13,14 @@ import { SniperState } from "./sniper-state";
 
 describe("Auction Snipper", () => {
   let auction: FakeAuctionServer;
+  let auction2: FakeAuctionServer;
   let application: ApplicationRunner;
 
   beforeEach(() => {
     // Even for E2E test we use a fake server because the actual one
     // from 3rd party is not easy to access => pragmatic choice!
     auction = new FakeAuctionServer("item-54387");
+    auction2 = new FakeAuctionServer("item-65432");
 
     // We put test logic in an ApplicationRunner to be more expressive in tests
     application = new ApplicationRunner();
@@ -73,6 +75,34 @@ describe("Auction Snipper", () => {
 
     auction.announceClosed();
     await application.showsSniperHasWonAuction(auction, 1098);
+  });
+
+  it("should bid for multiple items", async () => {
+    auction.startSellingItem();
+    auction2.startSellingItem();
+    await application.startBiddingIn(auction, auction2);
+    await auction.hasReceivedJoinRequestFromSniper(
+      ApplicationRunner.SNIPER_XMPP_ID
+    );
+    await auction2.hasReceivedJoinRequestFromSniper(
+      ApplicationRunner.SNIPER_XMPP_ID
+    );
+
+    auction.reportPrice(1000, 98, "other bidder");
+    await auction.hasReceivedBid(1098, ApplicationRunner.SNIPER_XMPP_ID);
+
+    auction2.reportPrice(500, 21, "other bidder");
+    await auction2.hasReceivedBid(521, ApplicationRunner.SNIPER_XMPP_ID);
+
+    auction.reportPrice(1098, 97, ApplicationRunner.SNIPER_XMPP_ID);
+    auction2.reportPrice(521, 22, ApplicationRunner.SNIPER_XMPP_ID);
+    await application.hasShownSniperIsWinning(auction, 1098);
+    await application.hasShownSniperIsWinning(auction2, 521);
+
+    auction.announceClosed();
+    auction2.announceClosed();
+    await application.showsSniperHasWonAuction(auction, 1098);
+    await application.showsSniperHasWonAuction(auction2, 521);
   });
 });
 
@@ -190,13 +220,13 @@ class ApplicationRunner {
     this.driver = new AuctionSniperDriver(1000);
   }
 
-  async startBiddingIn(auction: AuctionServer): Promise<void> {
+  async startBiddingIn(...auctions: AuctionServer[]): Promise<void> {
     const thread = new Thread("Test Application", () => {
       Main.main(
-        auction.XMPP_HOST_NAME,
+        auctions[0].XMPP_HOST_NAME,
         ApplicationRunner.SNIPER_ID,
         ApplicationRunner.SNIPER_PASSWORD,
-        auction.itemId
+        auctions[0].itemId
       );
     });
     thread.start();
