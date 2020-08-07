@@ -4,7 +4,7 @@ import { SniperListener, AuctionSniper } from "./auction-sniper";
 import { Auction } from "./auction";
 import { SniperSnapshot } from "./sniper-snapshot";
 
-export { Main, MainWindow };
+export { Main };
 
 class Main {
   static readonly SNIPER_XMPP_ID = "Sniper 1245";
@@ -58,19 +58,19 @@ class Main {
   }
 }
 
-class MainWindow {
+class SniperStateDisplayer implements SniperListener {
   static readonly STATUS_JOINING = "joining";
 
   constructor() {
     process.stdout.write("Auction Sniper");
-    this.showStatus(MainWindow.STATUS_JOINING);
+    this.showStatus(SniperStateDisplayer.STATUS_JOINING);
   }
 
   showStatus(status: string) {
     process.stdout.write(status);
   }
 
-  sniperStatusChanged(snapshot: SniperSnapshot) {
+  sniperStateChanged(snapshot: SniperSnapshot) {
     process.stdout.write(
       `${snapshot.itemId} - ${snapshot.lastPrice} - ${snapshot.lastBid} - ${snapshot.state}`
     );
@@ -86,17 +86,5 @@ class XMPPAuction implements Auction {
 
   join() {
     this.chat.sendMessage(Main.JOIN_COMMAND_FORMAT);
-  }
-}
-
-class SniperStateDisplayer implements SniperListener {
-  private ui: MainWindow;
-
-  constructor() {
-    this.ui = new MainWindow();
-  }
-
-  sniperStateChanged(snapshot: SniperSnapshot) {
-    this.ui.sniperStatusChanged(snapshot);
   }
 }

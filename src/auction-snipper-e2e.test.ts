@@ -8,7 +8,7 @@ import {
   MessageListener,
 } from "./lib/xmpp";
 import { AuctionServer } from "./auction-server";
-import { Main, MainWindow } from "./index";
+import { Main } from "./index";
 import { SniperState } from "./sniper-state";
 
 describe("Auction Snipper", () => {
