@@ -14,7 +14,9 @@ describe("AuctionSniper", () => {
 
     sniper.auctionClosed();
 
-    expect(sniperListener.sniperLost).toBeCalled();
+    expect(sniperListener.sniperStateChanged).toBeCalledWith(
+      new SniperSnapshot(ITEM_ID, 0, 0, SniperState.LOST)
+    );
   });
 
   it("should bid higher and report bidding when new price arrives from other bidder", () => {
@@ -59,7 +61,7 @@ describe("AuctionSniper", () => {
     const auction = new FakeAuction();
     const sniperListener = new FakeSniperListener();
     let state = "fresh";
-    sniperListener.sniperStateChanged.mockImplementation(
+    sniperListener.sniperStateChanged.mockImplementationOnce(
       (snapshot: SniperSnapshot) => {
         expect(snapshot.state).toBe(SniperState.BIDDING);
         state = "bidding";
@@ -70,7 +72,9 @@ describe("AuctionSniper", () => {
     sniper.currentPrice(123, 45, PriceSource.FromOtherBidder);
     sniper.auctionClosed();
 
-    expect(sniperListener.sniperLost).toBeCalled();
+    expect(sniperListener.sniperStateChanged).toBeCalledWith(
+      new SniperSnapshot(ITEM_ID, 123, 168, SniperState.LOST)
+    );
     expect(state).toBe("bidding");
   });
 
@@ -86,14 +90,14 @@ describe("AuctionSniper", () => {
     sniper.currentPrice(123, 45, PriceSource.FromSniper);
     sniper.auctionClosed();
 
-    expect(sniperListener.sniperWon).toBeCalled();
+    expect(sniperListener.sniperStateChanged).toBeCalledWith(
+      new SniperSnapshot(ITEM_ID, 123, 0, SniperState.WON)
+    );
     expect(state).toBe("winning");
   });
 });
 
 class FakeSniperListener implements SniperListener {
-  sniperLost = jest.fn();
-  sniperWon = jest.fn();
   sniperStateChanged = jest.fn();
 }
 

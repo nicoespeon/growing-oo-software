@@ -31,4 +31,33 @@ class SniperSnapshot {
       SniperState.WINNING
     );
   }
+
+  closed(): SniperSnapshot {
+    return new SniperSnapshot(
+      this.itemId,
+      this.lastPrice,
+      this.lastBid,
+      this.stateWhenAuctionClosed
+    );
+  }
+
+  get stateWhenAuctionClosed(): SniperState {
+    switch (this.state) {
+      case SniperState.JOINING:
+        return SniperState.LOST;
+
+      case SniperState.BIDDING:
+        return SniperState.LOST;
+
+      case SniperState.WINNING:
+        return SniperState.WON;
+
+      case SniperState.WON:
+      case SniperState.LOST:
+        throw new Defect("Auction is already closed");
+    }
+  }
 }
+
+// Defect is an error that's due to a programming mistake
+class Defect extends Error {}

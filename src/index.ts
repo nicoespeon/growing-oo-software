@@ -60,8 +60,6 @@ class Main {
 
 class MainWindow {
   static readonly STATUS_JOINING = "joining";
-  static readonly STATUS_LOST = "lost";
-  static readonly STATUS_WON = "won";
 
   constructor() {
     process.stdout.write("Auction Sniper");
@@ -96,14 +94,6 @@ class SniperStateDisplayer implements SniperListener {
 
   constructor() {
     this.ui = new MainWindow();
-  }
-
-  sniperLost() {
-    this.ui.showStatus(MainWindow.STATUS_LOST);
-  }
-
-  sniperWon() {
-    this.ui.showStatus(MainWindow.STATUS_WON);
   }
 
   sniperStateChanged(snapshot: SniperSnapshot) {
