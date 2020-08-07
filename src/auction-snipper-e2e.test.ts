@@ -50,7 +50,7 @@ describe("Auction Snipper", () => {
     );
 
     auction.reportPrice(1000, 98, "other bidder");
-    await application.hasShownSniperIsBidding(1000, 98);
+    await application.hasShownSniperIsBidding(auction, 1000, 98);
     await auction.hasReceivedBid(1098, ApplicationRunner.SNIPER_XMPP_ID);
 
     auction.announceClosed();
@@ -65,14 +65,14 @@ describe("Auction Snipper", () => {
     );
 
     auction.reportPrice(1000, 98, "other bidder");
-    await application.hasShownSniperIsBidding(1000, 98);
+    await application.hasShownSniperIsBidding(auction, 1000, 98);
     await auction.hasReceivedBid(1098, ApplicationRunner.SNIPER_XMPP_ID);
 
     auction.reportPrice(1098, 97, ApplicationRunner.SNIPER_XMPP_ID);
-    await application.hasShownSniperIsWinning(1098);
+    await application.hasShownSniperIsWinning(auction, 1098);
 
     auction.announceClosed();
-    await application.showsSniperHasWonAuction(1098);
+    await application.showsSniperHasWonAuction(auction, 1098);
   });
 });
 
@@ -185,14 +185,12 @@ class ApplicationRunner {
   static readonly SNIPER_PASSWORD = "sniper";
 
   private driver: AuctionSniperDriver;
-  private itemId = "item ID not set";
 
   constructor() {
     this.driver = new AuctionSniperDriver(1000);
   }
 
   async startBiddingIn(auction: AuctionServer): Promise<void> {
-    this.itemId = auction.itemId;
     const thread = new Thread("Test Application", () => {
       Main.main(
         auction.XMPP_HOST_NAME,
@@ -210,9 +208,12 @@ class ApplicationRunner {
     await this.driver.showsSniperStatus(SniperState.LOST);
   }
 
-  async showsSniperHasWonAuction(lastPrice: number): Promise<void> {
+  async showsSniperHasWonAuction(
+    auction: FakeAuctionServer,
+    lastPrice: number
+  ): Promise<void> {
     await this.driver.showsSniperStatus(
-      this.itemId,
+      auction.itemId,
       lastPrice,
       lastPrice,
       SniperState.WON
@@ -220,20 +221,24 @@ class ApplicationRunner {
   }
 
   async hasShownSniperIsBidding(
+    auction: FakeAuctionServer,
     lastPrice: number,
     lastBid: number
   ): Promise<void> {
     await this.driver.showsSniperStatus(
-      this.itemId,
+      auction.itemId,
       lastPrice,
       lastBid,
       SniperState.BIDDING
     );
   }
 
-  async hasShownSniperIsWinning(winningBid: number): Promise<void> {
+  async hasShownSniperIsWinning(
+    auction: FakeAuctionServer,
+    winningBid: number
+  ): Promise<void> {
     await this.driver.showsSniperStatus(
-      this.itemId,
+      auction.itemId,
       winningBid,
       winningBid,
       SniperState.WINNING
