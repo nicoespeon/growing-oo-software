@@ -222,16 +222,25 @@ class ApplicationRunner {
 
   async startBiddingIn(...auctions: AuctionServer[]): Promise<void> {
     const thread = new Thread("Test Application", () => {
-      Main.main(
-        auctions[0].XMPP_HOST_NAME,
-        ApplicationRunner.SNIPER_ID,
-        ApplicationRunner.SNIPER_PASSWORD,
-        auctions[0].itemId
-      );
+      auctions.forEach((auction) => {
+        Main.main(
+          auction.XMPP_HOST_NAME,
+          ApplicationRunner.SNIPER_ID,
+          ApplicationRunner.SNIPER_PASSWORD,
+          auction.itemId
+        );
+      });
     });
     thread.start();
 
-    await this.driver.showsSniperStatus(SniperState.JOINING);
+    for (let auction of auctions) {
+      await this.driver.showsSniperStatus(
+        auction.itemId,
+        0,
+        0,
+        SniperState.JOINING
+      );
+    }
   }
 
   async showsSniperHasLostAuction(): Promise<void> {

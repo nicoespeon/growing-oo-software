@@ -3,7 +3,6 @@ import { AuctionMessageTranslator } from "./auction-message-translator";
 import { SniperListener, AuctionSniper } from "./auction-sniper";
 import { Auction } from "./auction";
 import { SniperSnapshot } from "./sniper-snapshot";
-import { SniperState } from "./sniper-state";
 
 export { Main };
 
@@ -36,7 +35,7 @@ class Main {
     chat.addMessageListener(
       new AuctionMessageTranslator(
         connection.user,
-        new AuctionSniper(auction, new SniperStateDisplayer(), itemId)
+        new AuctionSniper(auction, new SniperStateDisplayer(itemId), itemId)
       )
     );
     auction.join();
@@ -60,9 +59,9 @@ class Main {
 }
 
 class SniperStateDisplayer implements SniperListener {
-  constructor() {
+  constructor(itemId: string) {
     this.show("Auction Sniper");
-    this.show(SniperState.JOINING);
+    this.sniperStateChanged(SniperSnapshot.joining(itemId));
   }
 
   sniperStateChanged(snapshot: SniperSnapshot) {
