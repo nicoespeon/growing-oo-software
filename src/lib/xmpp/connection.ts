@@ -35,26 +35,44 @@ class Connection {
     return this.chatManager;
   }
 
-  disconnect() {}
+  disconnect() {
+    this.chatManager.disconnect();
+  }
 }
 
 class ChatManager {
-  private chat: Chat;
+  private chats = new Map<string, Chat>();
+  private chatListeners: ChatListener[] = [];
 
-  constructor(participant: string) {
-    this.chat = new Chat(participant);
-  }
+  constructor(private readonly participant: string) {}
 
   addChatListener(listener: ChatListener) {
-    listener.chatCreated(this.chat, true);
+    this.chatListeners.push(listener);
   }
 
   createChat(id: string, listener?: MessageListener): Chat {
-    if (listener) {
-      this.chat.addMessageListener(listener);
+    let chat = this.chats.get(id);
+
+    if (!chat) {
+      chat = new Chat(this.participant);
+      if (listener) {
+        chat.addMessageListener(listener);
+      }
+
+      this.chats.set(id, chat);
+
+      // Assign 1 chat listener / created chat, FIFO
+      const chatListener = this.chatListeners.shift();
+      if (chatListener) {
+        chatListener.chatCreated(chat, true);
+      }
     }
 
-    return this.chat;
+    return chat;
+  }
+
+  disconnect() {
+    this.chats.clear();
   }
 }
 
