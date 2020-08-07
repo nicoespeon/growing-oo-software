@@ -3,6 +3,7 @@ import { AuctionMessageTranslator } from "./auction-message-translator";
 import { SniperListener, AuctionSniper } from "./auction-sniper";
 import { Auction } from "./auction";
 import { SniperSnapshot } from "./sniper-snapshot";
+import { SniperState } from "./sniper-state";
 
 export { Main };
 
@@ -59,21 +60,19 @@ class Main {
 }
 
 class SniperStateDisplayer implements SniperListener {
-  static readonly STATUS_JOINING = "joining";
-
   constructor() {
-    process.stdout.write("Auction Sniper");
-    this.showStatus(SniperStateDisplayer.STATUS_JOINING);
-  }
-
-  showStatus(status: string) {
-    process.stdout.write(status);
+    this.show("Auction Sniper");
+    this.show(SniperState.JOINING);
   }
 
   sniperStateChanged(snapshot: SniperSnapshot) {
-    process.stdout.write(
+    this.show(
       `${snapshot.itemId} - ${snapshot.lastPrice} - ${snapshot.lastBid} - ${snapshot.state}`
     );
+  }
+
+  private show(message: string): void {
+    process.stdout.write(message);
   }
 }
 
