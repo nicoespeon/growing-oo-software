@@ -1,5 +1,5 @@
-import { SniperListener } from "./auction-sniper";
-import { SniperSnapshot } from "./sniper-snapshot";
+import { SniperListener } from "../domain/auction-sniper";
+import { SniperSnapshot } from "../domain/sniper-snapshot";
 
 export class SniperStateDisplayer implements SniperListener {
   constructor(itemId: string) {

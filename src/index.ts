@@ -1,7 +1,7 @@
-import { AuctionSniper } from "./auction-sniper";
-import { SniperStateDisplayer } from "./sniper-state-displayer";
-import { AuctionHouse } from "./auction";
-import { XMPPAuctionHouse } from "./xmpp-auction-house";
+import { AuctionSniper } from "./domain/auction-sniper";
+import { SniperStateDisplayer } from "./adapters/sniper-state-displayer";
+import { AuctionHouse } from "./domain/auction";
+import { XMPPAuctionHouse } from "./adapters/xmpp-auction-house";
 
 export { Main };
 

@@ -1,5 +1,8 @@
-import { Message, Chat } from "./lib/xmpp";
-import { AuctionEventListener, PriceSource } from "./auction-event-listener";
+import { Message, Chat } from "../lib/xmpp";
+import {
+  AuctionEventListener,
+  PriceSource,
+} from "../domain/auction-event-listener";
 
 export { AuctionMessageTranslator };
 

@@ -102,6 +102,7 @@ class FakeSniperListener implements SniperListener {
 }
 
 class FakeAuction implements Auction {
+  addAuctionEventListener = jest.fn();
   bid = jest.fn();
   join = jest.fn();
 }
