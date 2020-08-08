@@ -9,9 +9,7 @@ describe("AuctionSniper", () => {
   const ITEM = new Item("item ID", 1234);
 
   it("should report lost when auction closes immediately", () => {
-    const auction = new FakeAuction();
-    const sniperListener = new FakeSniperListener();
-    const sniper = new AuctionSniper(auction, sniperListener, ITEM);
+    const { sniperListener, sniper } = setup();
 
     sniper.auctionClosed();
 
@@ -21,12 +19,10 @@ describe("AuctionSniper", () => {
   });
 
   it("should bid higher and report bidding when new price arrives from other bidder", () => {
+    const { auction, sniperListener, sniper } = setup();
     const price = 1001;
     const increment = 25;
     const bid = price + increment;
-    const auction = new FakeAuction();
-    const sniperListener = new FakeSniperListener();
-    const sniper = new AuctionSniper(auction, sniperListener, ITEM);
 
     sniper.currentPrice(price, increment, PriceSource.FromOtherBidder);
 
@@ -38,9 +34,7 @@ describe("AuctionSniper", () => {
   });
 
   it("should report winning when new price arrives from sniper", () => {
-    const auction = new FakeAuction();
-    const sniperListener = new FakeSniperListener();
-    const sniper = new AuctionSniper(auction, sniperListener, ITEM);
+    const { sniperListener, sniper } = setup();
     let state = "fresh";
     allowingSniperBidding(sniperListener, () => (state = "bidding"));
 
@@ -54,11 +48,9 @@ describe("AuctionSniper", () => {
   });
 
   it("should report lost if auction closes when bidding", () => {
-    const auction = new FakeAuction();
-    const sniperListener = new FakeSniperListener();
+    const { sniperListener, sniper } = setup();
     let state = "fresh";
     allowingSniperBidding(sniperListener, () => (state = "bidding"));
-    const sniper = new AuctionSniper(auction, sniperListener, ITEM);
 
     sniper.currentPrice(123, 45, PriceSource.FromOtherBidder);
     sniper.auctionClosed();
@@ -70,11 +62,9 @@ describe("AuctionSniper", () => {
   });
 
   it("should report won if auction closes when winning", () => {
-    const auction = new FakeAuction();
-    const sniperListener = new FakeSniperListener();
+    const { sniperListener, sniper } = setup();
     let state = "fresh";
     allowingSniperWinning(sniperListener, () => (state = "winning"));
-    const sniper = new AuctionSniper(auction, sniperListener, ITEM);
 
     sniper.currentPrice(123, 45, PriceSource.FromSniper);
     sniper.auctionClosed();
@@ -86,11 +76,9 @@ describe("AuctionSniper", () => {
   });
 
   it("should not bid and report losing if subsequent price is above stop price", () => {
-    const auction = new FakeAuction();
-    const sniperListener = new FakeSniperListener();
+    const { auction, sniperListener, sniper } = setup();
     let state = "fresh";
     allowingSniperBidding(sniperListener, () => (state = "bidding"));
-    const sniper = new AuctionSniper(auction, sniperListener, ITEM);
 
     sniper.currentPrice(123, 45, PriceSource.FromOtherBidder);
     sniper.currentPrice(2345, 25, PriceSource.FromOtherBidder);
@@ -104,9 +92,7 @@ describe("AuctionSniper", () => {
   });
 
   it("should not bid and report losing if first price is above stop price", () => {
-    const auction = new FakeAuction();
-    const sniperListener = new FakeSniperListener();
-    const sniper = new AuctionSniper(auction, sniperListener, ITEM);
+    const { auction, sniperListener, sniper } = setup();
 
     sniper.currentPrice(2345, 25, PriceSource.FromOtherBidder);
 
@@ -117,9 +103,7 @@ describe("AuctionSniper", () => {
   });
 
   it("should report lost if auction closes when losing", () => {
-    const auction = new FakeAuction();
-    const sniperListener = new FakeSniperListener();
-    const sniper = new AuctionSniper(auction, sniperListener, ITEM);
+    const { auction, sniperListener, sniper } = setup();
 
     sniper.currentPrice(123, 45, PriceSource.FromOtherBidder);
     sniper.currentPrice(2345, 25, PriceSource.FromOtherBidder);
@@ -133,9 +117,7 @@ describe("AuctionSniper", () => {
   });
 
   it("should continue to be losing once stop price has been reached", () => {
-    const auction = new FakeAuction();
-    const sniperListener = new FakeSniperListener();
-    const sniper = new AuctionSniper(auction, sniperListener, ITEM);
+    const { auction, sniperListener, sniper } = setup();
 
     sniper.currentPrice(123, 45, PriceSource.FromOtherBidder);
     sniper.currentPrice(2345, 25, PriceSource.FromOtherBidder);
@@ -150,9 +132,7 @@ describe("AuctionSniper", () => {
   });
 
   it("should not bid and report losing if price after winning is above stop price", () => {
-    const auction = new FakeAuction();
-    const sniperListener = new FakeSniperListener();
-    const sniper = new AuctionSniper(auction, sniperListener, ITEM);
+    const { auction, sniperListener, sniper } = setup();
     let state = "fresh";
     allowingSniperWinning(sniperListener, () => (state = "winning"));
 
@@ -165,6 +145,14 @@ describe("AuctionSniper", () => {
     );
     expect(state).toBe("winning");
   });
+
+  function setup() {
+    const auction = new FakeAuction();
+    const sniperListener = new FakeSniperListener();
+    const sniper = new AuctionSniper(auction, sniperListener, ITEM);
+
+    return { auction, sniperListener, sniper };
+  }
 });
 
 class FakeSniperListener implements SniperListener {
