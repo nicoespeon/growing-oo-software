@@ -42,12 +42,7 @@ describe("AuctionSniper", () => {
     const sniperListener = new FakeSniperListener();
     const sniper = new AuctionSniper(auction, sniperListener, ITEM);
     let state = "fresh";
-    sniperListener.sniperStateChanged.mockImplementationOnce(
-      (snapshot: SniperSnapshot) => {
-        expect(snapshot.state).toBe(SniperState.BIDDING);
-        state = "bidding";
-      }
-    );
+    allowingSniperBidding(sniperListener, () => (state = "bidding"));
 
     sniper.currentPrice(1001, 25, PriceSource.FromOtherBidder);
     sniper.currentPrice(1026, 25, PriceSource.FromSniper);
@@ -62,12 +57,7 @@ describe("AuctionSniper", () => {
     const auction = new FakeAuction();
     const sniperListener = new FakeSniperListener();
     let state = "fresh";
-    sniperListener.sniperStateChanged.mockImplementationOnce(
-      (snapshot: SniperSnapshot) => {
-        expect(snapshot.state).toBe(SniperState.BIDDING);
-        state = "bidding";
-      }
-    );
+    allowingSniperBidding(sniperListener, () => (state = "bidding"));
     const sniper = new AuctionSniper(auction, sniperListener, ITEM);
 
     sniper.currentPrice(123, 45, PriceSource.FromOtherBidder);
@@ -101,12 +91,7 @@ describe("AuctionSniper", () => {
     const auction = new FakeAuction();
     const sniperListener = new FakeSniperListener();
     let state = "fresh";
-    sniperListener.sniperStateChanged.mockImplementationOnce(
-      (snapshot: SniperSnapshot) => {
-        expect(snapshot.state).toBe(SniperState.BIDDING);
-        state = "bidding";
-      }
-    );
+    allowingSniperBidding(sniperListener, () => (state = "bidding"));
     const sniper = new AuctionSniper(auction, sniperListener, ITEM);
 
     sniper.currentPrice(123, 45, PriceSource.FromOtherBidder);
@@ -129,4 +114,16 @@ class FakeAuction implements Auction {
   addAuctionEventListener = jest.fn();
   bid = jest.fn();
   join = jest.fn();
+}
+
+function allowingSniperBidding(
+  sniperListener: FakeSniperListener,
+  onBid: Function
+) {
+  sniperListener.sniperStateChanged.mockImplementationOnce(
+    (snapshot: SniperSnapshot) => {
+      expect(snapshot.state).toBe(SniperState.BIDDING);
+      onBid();
+    }
+  );
 }
