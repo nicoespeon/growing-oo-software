@@ -3,6 +3,7 @@ import { AuctionMessageTranslator } from "./auction-message-translator";
 import { SniperListener, AuctionSniper } from "./auction-sniper";
 import { Auction } from "./auction";
 import { SniperSnapshot } from "./sniper-snapshot";
+import { AuctionEventListener } from "./auction-event-listener";
 
 export { Main };
 
@@ -27,16 +28,9 @@ class Main {
   }
 
   private joinAuction(connection: XMPPConnection, itemId: string) {
-    const chat = connection
-      .getChatManager()
-      .createChat(Main.auctionId(itemId, connection));
-
-    const auction = new XMPPAuction(chat);
-    chat.addMessageListener(
-      new AuctionMessageTranslator(
-        connection.user,
-        new AuctionSniper(auction, new SniperStateDisplayer(itemId), itemId)
-      )
+    const auction = new XMPPAuction(connection, itemId);
+    auction.addAuctionEventListener(
+      new AuctionSniper(auction, new SniperStateDisplayer(itemId), itemId)
     );
     auction.join();
   }
@@ -51,10 +45,6 @@ class Main {
     connection.login(username, password, Main.AUCTION_RESOURCE);
 
     return connection;
-  }
-
-  private static auctionId(itemId: string, connection: XMPPConnection): string {
-    return `auction-${itemId}@${connection.serviceName}/${Main.AUCTION_RESOURCE}`;
   }
 }
 
@@ -76,7 +66,21 @@ class SniperStateDisplayer implements SniperListener {
 }
 
 class XMPPAuction implements Auction {
-  constructor(private chat: Chat) {}
+  private chat: Chat;
+
+  constructor(private connection: XMPPConnection, itemId: string) {
+    this.chat = connection
+      .getChatManager()
+      .createChat(
+        `auction-${itemId}@${connection.serviceName}/${Main.AUCTION_RESOURCE}`
+      );
+  }
+
+  addAuctionEventListener(listener: AuctionEventListener) {
+    this.chat.addMessageListener(
+      new AuctionMessageTranslator(this.connection.user, listener)
+    );
+  }
 
   bid(amount: number) {
     this.chat.sendMessage(Main.BID_COMMAND_FORMAT(amount));
