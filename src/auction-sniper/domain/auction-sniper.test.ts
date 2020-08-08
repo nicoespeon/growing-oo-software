@@ -73,9 +73,7 @@ describe("AuctionSniper", () => {
     const auction = new FakeAuction();
     const sniperListener = new FakeSniperListener();
     let state = "fresh";
-    sniperListener.sniperStateChanged.mockImplementation(
-      () => (state = "winning")
-    );
+    allowingSniperWinning(sniperListener, () => (state = "winning"));
     const sniper = new AuctionSniper(auction, sniperListener, ITEM);
 
     sniper.currentPrice(123, 45, PriceSource.FromSniper);
@@ -104,6 +102,69 @@ describe("AuctionSniper", () => {
     );
     expect(state).toBe("bidding");
   });
+
+  it("should not bid and report losing if first price is above stop price", () => {
+    const auction = new FakeAuction();
+    const sniperListener = new FakeSniperListener();
+    const sniper = new AuctionSniper(auction, sniperListener, ITEM);
+
+    sniper.currentPrice(2345, 25, PriceSource.FromOtherBidder);
+
+    expect(auction.bid).not.toBeCalled();
+    expect(sniperListener.sniperStateChanged).toBeCalledWith(
+      new SniperSnapshot(ITEM.identifier, 2345, 0, SniperState.LOSING)
+    );
+  });
+
+  it("should report lost if auction closes when losing", () => {
+    const auction = new FakeAuction();
+    const sniperListener = new FakeSniperListener();
+    const sniper = new AuctionSniper(auction, sniperListener, ITEM);
+
+    sniper.currentPrice(123, 45, PriceSource.FromOtherBidder);
+    sniper.currentPrice(2345, 25, PriceSource.FromOtherBidder);
+    sniper.auctionClosed();
+
+    const bid = 123 + 45;
+    expect(auction.bid).toBeCalledWith(bid);
+    expect(sniperListener.sniperStateChanged).toBeCalledWith(
+      new SniperSnapshot(ITEM.identifier, 2345, bid, SniperState.LOST)
+    );
+  });
+
+  it("should continue to be losing once stop price has been reached", () => {
+    const auction = new FakeAuction();
+    const sniperListener = new FakeSniperListener();
+    const sniper = new AuctionSniper(auction, sniperListener, ITEM);
+
+    sniper.currentPrice(123, 45, PriceSource.FromOtherBidder);
+    sniper.currentPrice(2345, 25, PriceSource.FromOtherBidder);
+    sniper.currentPrice(3456, 25, PriceSource.FromOtherBidder);
+    sniper.currentPrice(4567, 25, PriceSource.FromOtherBidder);
+
+    const bid = 123 + 45;
+    expect(auction.bid).toBeCalledWith(bid);
+    expect(sniperListener.sniperStateChanged).toBeCalledWith(
+      new SniperSnapshot(ITEM.identifier, 4567, bid, SniperState.LOSING)
+    );
+  });
+
+  it("should not bid and report losing if price after winning is above stop price", () => {
+    const auction = new FakeAuction();
+    const sniperListener = new FakeSniperListener();
+    const sniper = new AuctionSniper(auction, sniperListener, ITEM);
+    let state = "fresh";
+    allowingSniperWinning(sniperListener, () => (state = "winning"));
+
+    sniper.currentPrice(123, 45, PriceSource.FromSniper);
+    sniper.currentPrice(2345, 25, PriceSource.FromOtherBidder);
+
+    expect(auction.bid).not.toBeCalled();
+    expect(sniperListener.sniperStateChanged).toBeCalledWith(
+      new SniperSnapshot(ITEM.identifier, 2345, 0, SniperState.LOSING)
+    );
+    expect(state).toBe("winning");
+  });
 });
 
 class FakeSniperListener implements SniperListener {
@@ -124,6 +185,18 @@ function allowingSniperBidding(
     (snapshot: SniperSnapshot) => {
       expect(snapshot.state).toBe(SniperState.BIDDING);
       onBid();
+    }
+  );
+}
+
+function allowingSniperWinning(
+  sniperListener: FakeSniperListener,
+  onWinning: Function
+) {
+  sniperListener.sniperStateChanged.mockImplementationOnce(
+    (snapshot: SniperSnapshot) => {
+      expect(snapshot.state).toBe(SniperState.WINNING);
+      onWinning();
     }
   );
 }
