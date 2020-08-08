@@ -38,3 +38,5 @@ I didn't want to set up a server & a client, then to rely on the browser. Theref
 - Jest has custom matchers too! I'm happy that I can be that expressive in my tests.
 - Once past the first setup, everything becomes easy to change and we're making steady progress.
 - There are some gaps in the book that need to be filled when reproducing the code. The fact I'm adapting to TypeScript accentuates this.
+- I decided to simplify the UI by using a CLI and not to consider user inputs. In a real application, I'd probably have a server running and the view served in the browser. I'd use a solution like Cypress to interact with the UI.
+- My custom (fake) implementation of the XMPP Connection isn't great. On the positive side, I don't have to actually have such server running to run the tests. But I can feel how hacky it is, it's getting harder to fill the gap with what an actual server would do.
