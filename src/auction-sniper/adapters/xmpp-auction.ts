@@ -1,4 +1,4 @@
-import { Connection as XMPPConnection, Chat } from "../lib/xmpp";
+import { Connection as XMPPConnection, Chat } from "../../lib/xmpp";
 import { AuctionMessageTranslator } from "./auction-message-translator";
 import { Auction } from "../domain/auction";
 import { AuctionEventListener } from "../domain/auction-event-listener";

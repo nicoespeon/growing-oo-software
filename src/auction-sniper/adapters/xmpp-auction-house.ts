@@ -1,6 +1,6 @@
-import { Connection as XMPPConnection } from "../lib/xmpp";
-import { XMPPAuction } from "./xmpp-auction";
+import { Connection as XMPPConnection } from "../../lib/xmpp";
 import { Auction, AuctionHouse } from "../domain/auction";
+import { XMPPAuction } from "./xmpp-auction";
 
 export class XMPPAuctionHouse implements AuctionHouse {
   static readonly SNIPER_XMPP_ID = "Sniper 1245";

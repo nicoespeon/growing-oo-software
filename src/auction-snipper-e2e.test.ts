@@ -8,10 +8,10 @@ import {
   MessageListener,
 } from "./lib/xmpp";
 
-import { Main } from "./index";
-import { AuctionServer } from "./domain/auction-server";
-import { SniperState } from "./domain/sniper-state";
-import { XMPPAuction } from "./adapters/xmpp-auction";
+import { Main } from "./auction-sniper";
+import { AuctionServer } from "./auction-sniper/domain/auction-server";
+import { SniperState } from "./auction-sniper/domain/sniper-state";
+import { XMPPAuction } from "./auction-sniper/adapters/xmpp-auction";
 
 describe("Auction Snipper", () => {
   let auction: FakeAuctionServer;

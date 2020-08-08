@@ -1,4 +1,4 @@
-import { Message, Chat } from "../lib/xmpp";
+import { Message, Chat } from "../../lib/xmpp";
 import {
   AuctionEventListener,
   PriceSource,
