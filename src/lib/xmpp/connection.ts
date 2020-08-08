@@ -36,7 +36,7 @@ class Connection {
   }
 
   disconnect() {
-    this.chatManager.disconnect();
+    this.chatManager?.disconnect();
   }
 }
 
