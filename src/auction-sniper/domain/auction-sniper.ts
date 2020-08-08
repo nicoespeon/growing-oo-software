@@ -15,7 +15,7 @@ class AuctionSniper implements AuctionEventListener {
   constructor(
     private auction: Auction,
     private listener: SniperListener,
-    item: Item
+    private item: Item
   ) {
     this.snapshot = SniperSnapshot.joining(item.identifier);
   }
@@ -33,8 +33,12 @@ class AuctionSniper implements AuctionEventListener {
 
       case PriceSource.FromOtherBidder:
         const bid = price + increment;
-        this.auction.bid(bid);
-        this.snapshot = this.snapshot.bidding(price, bid);
+        if (this.item.allowsBid(bid)) {
+          this.auction.bid(bid);
+          this.snapshot = this.snapshot.bidding(price, bid);
+        } else {
+          this.snapshot = this.snapshot.losing(price);
+        }
         break;
     }
 

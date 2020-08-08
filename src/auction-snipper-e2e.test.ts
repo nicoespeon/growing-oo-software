@@ -106,6 +106,27 @@ describe("Auction Snipper", () => {
     await application.showsSniperHasWonAuction(auction, 1098);
     await application.showsSniperHasWonAuction(auction2, 521);
   });
+
+  it("should lose an auction when the price is too high", async () => {
+    auction.startSellingItem();
+    await application.startBiddingWithStopPrice(auction, 1100);
+    await auction.hasReceivedJoinRequestFromSniper(
+      ApplicationRunner.SNIPER_XMPP_ID
+    );
+
+    auction.reportPrice(1000, 98, "other bidder");
+    await application.hasShownSniperIsBidding(auction, 1000, 1098);
+    await auction.hasReceivedBid(1098, ApplicationRunner.SNIPER_XMPP_ID);
+
+    auction.reportPrice(1197, 10, "third party");
+    await application.hasShownSniperIsLosing(auction, 1197, 1098);
+
+    auction.reportPrice(1207, 10, "fourth party");
+    await application.hasShownSniperIsLosing(auction, 1207, 1098);
+
+    auction.announceClosed();
+    await application.showsSniperHasLostAuction(auction, 1207, 1098);
+  });
 });
 
 class FakeAuctionServer implements AuctionServer {
@@ -245,6 +266,26 @@ class ApplicationRunner {
     }
   }
 
+  async startBiddingWithStopPrice(auction: AuctionServer, stopPrice: number) {
+    const thread = new Thread("Test Application", () => {
+      Main.main(
+        auction.XMPP_HOST_NAME,
+        ApplicationRunner.SNIPER_ID,
+        ApplicationRunner.SNIPER_PASSWORD,
+        auction.itemId,
+        stopPrice
+      );
+    });
+    thread.start();
+
+    await this.driver.showsSniperStatus(
+      auction.itemId,
+      0,
+      0,
+      SniperState.JOINING
+    );
+  }
+
   async showsSniperHasLostAuction(
     auction: FakeAuctionServer,
     lastPrice: number,
@@ -292,6 +333,19 @@ class ApplicationRunner {
       winningBid,
       winningBid,
       SniperState.WINNING
+    );
+  }
+
+  async hasShownSniperIsLosing(
+    auction: FakeAuctionServer,
+    lastPrice: number,
+    lastBid: number
+  ): Promise<void> {
+    await this.driver.showsSniperStatus(
+      auction.itemId,
+      lastPrice,
+      lastBid,
+      SniperState.LOSING
     );
   }
 

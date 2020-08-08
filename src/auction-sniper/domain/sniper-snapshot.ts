@@ -32,6 +32,15 @@ class SniperSnapshot {
     );
   }
 
+  losing(newLastPrice: number): SniperSnapshot {
+    return new SniperSnapshot(
+      this.itemId,
+      newLastPrice,
+      this.lastBid,
+      SniperState.LOSING
+    );
+  }
+
   closed(): SniperSnapshot {
     return new SniperSnapshot(
       this.itemId,
@@ -47,6 +56,9 @@ class SniperSnapshot {
         return SniperState.LOST;
 
       case SniperState.BIDDING:
+        return SniperState.LOST;
+
+      case SniperState.LOSING:
         return SniperState.LOST;
 
       case SniperState.WINNING:

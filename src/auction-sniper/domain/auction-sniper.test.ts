@@ -6,7 +6,7 @@ import { SniperState } from "./sniper-state";
 import { Item } from "./item";
 
 describe("AuctionSniper", () => {
-  const ITEM = new Item("item ID");
+  const ITEM = new Item("item ID", 1234);
 
   it("should report lost when auction closes immediately", () => {
     const auction = new FakeAuction();
@@ -95,6 +95,29 @@ describe("AuctionSniper", () => {
       new SniperSnapshot(ITEM.identifier, 123, 0, SniperState.WON)
     );
     expect(state).toBe("winning");
+  });
+
+  it("should not bid and report losing if subsequent price is above stop price", () => {
+    const auction = new FakeAuction();
+    const sniperListener = new FakeSniperListener();
+    let state = "fresh";
+    sniperListener.sniperStateChanged.mockImplementationOnce(
+      (snapshot: SniperSnapshot) => {
+        expect(snapshot.state).toBe(SniperState.BIDDING);
+        state = "bidding";
+      }
+    );
+    const sniper = new AuctionSniper(auction, sniperListener, ITEM);
+
+    sniper.currentPrice(123, 45, PriceSource.FromOtherBidder);
+    sniper.currentPrice(2345, 25, PriceSource.FromOtherBidder);
+
+    const bid = 123 + 45;
+    expect(auction.bid).toBeCalledWith(bid);
+    expect(sniperListener.sniperStateChanged).toBeCalledWith(
+      new SniperSnapshot(ITEM.identifier, 2345, bid, SniperState.LOSING)
+    );
+    expect(state).toBe("bidding");
   });
 });
 
