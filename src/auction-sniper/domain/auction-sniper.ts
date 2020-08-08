@@ -1,6 +1,7 @@
 import { AuctionEventListener, PriceSource } from "./auction-event-listener";
 import { Auction } from "./auction";
 import { SniperSnapshot } from "./sniper-snapshot";
+import { Item } from "./item";
 
 export { SniperListener, AuctionSniper };
 
@@ -14,9 +15,9 @@ class AuctionSniper implements AuctionEventListener {
   constructor(
     private auction: Auction,
     private listener: SniperListener,
-    itemId: string
+    item: Item
   ) {
-    this.snapshot = SniperSnapshot.joining(itemId);
+    this.snapshot = SniperSnapshot.joining(item.identifier);
   }
 
   auctionClosed() {

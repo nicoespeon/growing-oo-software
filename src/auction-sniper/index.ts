@@ -2,6 +2,7 @@ import { AuctionSniper } from "./domain/auction-sniper";
 import { SniperStateDisplayer } from "./adapters/sniper-state-displayer";
 import { AuctionHouse } from "./domain/auction";
 import { XMPPAuctionHouse } from "./adapters/xmpp-auction-house";
+import { Item } from "./domain/item";
 
 export { Main };
 
@@ -10,7 +11,8 @@ class Main {
     hostName: string,
     sniperUsername: string,
     sniperPassword: string,
-    itemId: string
+    itemId: string,
+    stopPrice?: number
   ): void {
     const main = new Main();
     const auctionHouse = XMPPAuctionHouse.connect(
@@ -18,13 +20,18 @@ class Main {
       sniperUsername,
       sniperPassword
     );
-    main.joinAuction(auctionHouse, itemId);
+    const item = new Item(itemId, stopPrice);
+    main.joinAuction(auctionHouse, item);
   }
 
-  private joinAuction(auctionHouse: AuctionHouse, itemId: string) {
-    const auction = auctionHouse.auctionFor(itemId);
+  private joinAuction(auctionHouse: AuctionHouse, item: Item) {
+    const auction = auctionHouse.auctionFor(item);
     auction.addAuctionEventListener(
-      new AuctionSniper(auction, new SniperStateDisplayer(itemId), itemId)
+      new AuctionSniper(
+        auction,
+        new SniperStateDisplayer(item.identifier),
+        item
+      )
     );
     auction.join();
   }

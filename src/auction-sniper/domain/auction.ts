@@ -1,4 +1,5 @@
 import { AuctionEventListener } from "./auction-event-listener";
+import { Item } from "./item";
 
 export { Auction, AuctionHouse };
 
@@ -9,5 +10,5 @@ interface Auction {
 }
 
 interface AuctionHouse {
-  auctionFor: (itemId: string) => Auction;
+  auctionFor: (item: Item) => Auction;
 }

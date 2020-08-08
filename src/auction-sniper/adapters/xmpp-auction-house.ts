@@ -1,6 +1,7 @@
 import { Connection as XMPPConnection } from "../../lib/xmpp";
 import { Auction, AuctionHouse } from "../domain/auction";
 import { XMPPAuction } from "./xmpp-auction";
+import { Item } from "../domain/item";
 
 export class XMPPAuctionHouse implements AuctionHouse {
   static readonly SNIPER_XMPP_ID = "Sniper 1245";
@@ -19,7 +20,7 @@ export class XMPPAuctionHouse implements AuctionHouse {
     return new XMPPAuctionHouse(connection);
   }
 
-  auctionFor(itemId: string): Auction {
-    return new XMPPAuction(this.connection, itemId);
+  auctionFor(item: Item): Auction {
+    return new XMPPAuction(this.connection, item.identifier);
   }
 }
