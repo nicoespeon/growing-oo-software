@@ -43,7 +43,7 @@ describe("Auction Snipper", () => {
     );
 
     auction.announceClosed();
-    await application.showsSniperHasLostAuction();
+    await application.showsSniperHasLostAuction(auction, 0, 0);
   });
 
   it("should make a higher bid but loose", async () => {
@@ -58,7 +58,7 @@ describe("Auction Snipper", () => {
     await auction.hasReceivedBid(1098, ApplicationRunner.SNIPER_XMPP_ID);
 
     auction.announceClosed();
-    await application.showsSniperHasLostAuction();
+    await application.showsSniperHasLostAuction(auction, 1098, 0);
   });
 
   it("should win an auction by bidding higher", async () => {
@@ -245,8 +245,17 @@ class ApplicationRunner {
     }
   }
 
-  async showsSniperHasLostAuction(): Promise<void> {
-    await this.driver.showsSniperStatus(SniperState.LOST);
+  async showsSniperHasLostAuction(
+    auction: FakeAuctionServer,
+    lastPrice: number,
+    lastBid: number
+  ): Promise<void> {
+    await this.driver.showsSniperStatus(
+      auction.itemId,
+      lastPrice,
+      lastBid,
+      SniperState.LOST
+    );
   }
 
   async showsSniperHasWonAuction(
