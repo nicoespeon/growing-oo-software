@@ -1,13 +1,11 @@
-import { Connection as XMPPConnection } from "./lib/xmpp";
 import { AuctionSniper } from "./auction-sniper";
-import { XMPPAuction } from "./xmpp-auction";
 import { SniperStateDisplayer } from "./sniper-state-displayer";
+import { AuctionHouse } from "./auction";
+import { XMPPAuctionHouse } from "./xmpp-auction-house";
 
 export { Main };
 
 class Main {
-  static readonly SNIPER_XMPP_ID = "Sniper 1245";
-
   static main(
     hostName: string,
     sniperUsername: string,
@@ -15,29 +13,19 @@ class Main {
     itemId: string
   ): void {
     const main = new Main();
-    main.joinAuction(
-      Main.connection(hostName, sniperUsername, sniperPassword),
-      itemId
+    const auctionHouse = XMPPAuctionHouse.connect(
+      hostName,
+      sniperUsername,
+      sniperPassword
     );
+    main.joinAuction(auctionHouse, itemId);
   }
 
-  private joinAuction(connection: XMPPConnection, itemId: string) {
-    const auction = new XMPPAuction(connection, itemId);
+  private joinAuction(auctionHouse: AuctionHouse, itemId: string) {
+    const auction = auctionHouse.auctionFor(itemId);
     auction.addAuctionEventListener(
       new AuctionSniper(auction, new SniperStateDisplayer(itemId), itemId)
     );
     auction.join();
-  }
-
-  private static connection(
-    hostName: string,
-    username: string,
-    password: string
-  ): XMPPConnection {
-    const connection = new XMPPConnection(hostName, Main.SNIPER_XMPP_ID);
-    connection.connect();
-    connection.login(username, password, XMPPAuction.AUCTION_RESOURCE);
-
-    return connection;
   }
 }
