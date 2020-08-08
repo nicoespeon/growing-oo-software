@@ -1,7 +1,7 @@
 import { Connection as XMPPConnection } from "./lib/xmpp";
-import { SniperListener, AuctionSniper } from "./auction-sniper";
-import { SniperSnapshot } from "./sniper-snapshot";
+import { AuctionSniper } from "./auction-sniper";
 import { XMPPAuction } from "./xmpp-auction";
+import { SniperStateDisplayer } from "./sniper-state-displayer";
 
 export { Main };
 
@@ -39,22 +39,5 @@ class Main {
     connection.login(username, password, XMPPAuction.AUCTION_RESOURCE);
 
     return connection;
-  }
-}
-
-class SniperStateDisplayer implements SniperListener {
-  constructor(itemId: string) {
-    this.show("Auction Sniper");
-    this.sniperStateChanged(SniperSnapshot.joining(itemId));
-  }
-
-  sniperStateChanged(snapshot: SniperSnapshot) {
-    this.show(
-      `${snapshot.itemId} - ${snapshot.lastPrice} - ${snapshot.lastBid} - ${snapshot.state}`
-    );
-  }
-
-  private show(message: string): void {
-    process.stdout.write(message);
   }
 }
