@@ -1,18 +1,12 @@
-import { Connection as XMPPConnection, Chat } from "./lib/xmpp";
-import { AuctionMessageTranslator } from "./auction-message-translator";
+import { Connection as XMPPConnection } from "./lib/xmpp";
 import { SniperListener, AuctionSniper } from "./auction-sniper";
-import { Auction } from "./auction";
 import { SniperSnapshot } from "./sniper-snapshot";
-import { AuctionEventListener } from "./auction-event-listener";
+import { XMPPAuction } from "./xmpp-auction";
 
 export { Main };
 
 class Main {
   static readonly SNIPER_XMPP_ID = "Sniper 1245";
-  static readonly AUCTION_RESOURCE = "Auction";
-  static readonly JOIN_COMMAND_FORMAT = "SOL Version: 1.1; Command: JOIN;";
-  static readonly BID_COMMAND_FORMAT = (bid: number) =>
-    `SOL Version: 1.1; Command: BID; Price: ${bid};`;
 
   static main(
     hostName: string,
@@ -42,7 +36,7 @@ class Main {
   ): XMPPConnection {
     const connection = new XMPPConnection(hostName, Main.SNIPER_XMPP_ID);
     connection.connect();
-    connection.login(username, password, Main.AUCTION_RESOURCE);
+    connection.login(username, password, XMPPAuction.AUCTION_RESOURCE);
 
     return connection;
   }
@@ -62,31 +56,5 @@ class SniperStateDisplayer implements SniperListener {
 
   private show(message: string): void {
     process.stdout.write(message);
-  }
-}
-
-class XMPPAuction implements Auction {
-  private chat: Chat;
-
-  constructor(private connection: XMPPConnection, itemId: string) {
-    this.chat = connection
-      .getChatManager()
-      .createChat(
-        `auction-${itemId}@${connection.serviceName}/${Main.AUCTION_RESOURCE}`
-      );
-  }
-
-  addAuctionEventListener(listener: AuctionEventListener) {
-    this.chat.addMessageListener(
-      new AuctionMessageTranslator(this.connection.user, listener)
-    );
-  }
-
-  bid(amount: number) {
-    this.chat.sendMessage(Main.BID_COMMAND_FORMAT(amount));
-  }
-
-  join() {
-    this.chat.sendMessage(Main.JOIN_COMMAND_FORMAT);
   }
 }

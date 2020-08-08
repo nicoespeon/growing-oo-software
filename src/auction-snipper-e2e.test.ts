@@ -7,9 +7,11 @@ import {
   Message,
   MessageListener,
 } from "./lib/xmpp";
-import { AuctionServer } from "./auction-server";
+
 import { Main } from "./index";
+import { AuctionServer } from "./auction-server";
 import { SniperState } from "./sniper-state";
+import { XMPPAuction } from "./xmpp-auction";
 
 describe("Auction Snipper", () => {
   let auction: FakeAuctionServer;
@@ -159,14 +161,14 @@ class FakeAuctionServer implements AuctionServer {
   async hasReceivedJoinRequestFromSniper(sniperId: string) {
     await this.receivesAMessageMatching(
       sniperId,
-      expect.stringMatching(Main.JOIN_COMMAND_FORMAT)
+      expect.stringMatching(XMPPAuction.joinCommandFormat())
     );
   }
 
   async hasReceivedBid(bid: number, sniperId: string) {
     await this.receivesAMessageMatching(
       sniperId,
-      expect.stringMatching(Main.BID_COMMAND_FORMAT(bid))
+      expect.stringMatching(XMPPAuction.bidCommandFormat(bid))
     );
   }
 
