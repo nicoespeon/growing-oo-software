@@ -7,6 +7,11 @@ import { Item } from "./item";
 
 describe("AuctionSniper", () => {
   const ITEM = new Item("item ID", 1234);
+  let state: string;
+
+  beforeEach(() => {
+    state = "fresh";
+  });
 
   it("should report lost when auction closes immediately", () => {
     const { sniperListener, sniper } = setup();
@@ -35,8 +40,7 @@ describe("AuctionSniper", () => {
 
   it("should report winning when new price arrives from sniper", () => {
     const { sniperListener, sniper } = setup();
-    let state = "fresh";
-    allowingSniperBidding(sniperListener, () => (state = "bidding"));
+    allowingSniperBidding(sniperListener);
 
     sniper.currentPrice(1001, 25, PriceSource.FromOtherBidder);
     sniper.currentPrice(1026, 25, PriceSource.FromSniper);
@@ -49,8 +53,7 @@ describe("AuctionSniper", () => {
 
   it("should report lost if auction closes when bidding", () => {
     const { sniperListener, sniper } = setup();
-    let state = "fresh";
-    allowingSniperBidding(sniperListener, () => (state = "bidding"));
+    allowingSniperBidding(sniperListener);
 
     sniper.currentPrice(123, 45, PriceSource.FromOtherBidder);
     sniper.auctionClosed();
@@ -63,8 +66,7 @@ describe("AuctionSniper", () => {
 
   it("should report won if auction closes when winning", () => {
     const { sniperListener, sniper } = setup();
-    let state = "fresh";
-    allowingSniperWinning(sniperListener, () => (state = "winning"));
+    allowingSniperWinning(sniperListener);
 
     sniper.currentPrice(123, 45, PriceSource.FromSniper);
     sniper.auctionClosed();
@@ -77,8 +79,7 @@ describe("AuctionSniper", () => {
 
   it("should not bid and report losing if subsequent price is above stop price", () => {
     const { auction, sniperListener, sniper } = setup();
-    let state = "fresh";
-    allowingSniperBidding(sniperListener, () => (state = "bidding"));
+    allowingSniperBidding(sniperListener);
 
     sniper.currentPrice(123, 45, PriceSource.FromOtherBidder);
     sniper.currentPrice(2345, 25, PriceSource.FromOtherBidder);
@@ -133,8 +134,7 @@ describe("AuctionSniper", () => {
 
   it("should not bid and report losing if price after winning is above stop price", () => {
     const { auction, sniperListener, sniper } = setup();
-    let state = "fresh";
-    allowingSniperWinning(sniperListener, () => (state = "winning"));
+    allowingSniperWinning(sniperListener);
 
     sniper.currentPrice(123, 45, PriceSource.FromSniper);
     sniper.currentPrice(2345, 25, PriceSource.FromOtherBidder);
@@ -153,6 +153,24 @@ describe("AuctionSniper", () => {
 
     return { auction, sniperListener, sniper };
   }
+
+  function allowingSniperBidding(sniperListener: FakeSniperListener) {
+    sniperListener.sniperStateChanged.mockImplementationOnce(
+      (snapshot: SniperSnapshot) => {
+        expect(snapshot.state).toBe(SniperState.BIDDING);
+        state = "bidding";
+      }
+    );
+  }
+
+  function allowingSniperWinning(sniperListener: FakeSniperListener) {
+    sniperListener.sniperStateChanged.mockImplementationOnce(
+      (snapshot: SniperSnapshot) => {
+        expect(snapshot.state).toBe(SniperState.WINNING);
+        state = "winning";
+      }
+    );
+  }
 });
 
 class FakeSniperListener implements SniperListener {
@@ -163,28 +181,4 @@ class FakeAuction implements Auction {
   addAuctionEventListener = jest.fn();
   bid = jest.fn();
   join = jest.fn();
-}
-
-function allowingSniperBidding(
-  sniperListener: FakeSniperListener,
-  onBid: Function
-) {
-  sniperListener.sniperStateChanged.mockImplementationOnce(
-    (snapshot: SniperSnapshot) => {
-      expect(snapshot.state).toBe(SniperState.BIDDING);
-      onBid();
-    }
-  );
-}
-
-function allowingSniperWinning(
-  sniperListener: FakeSniperListener,
-  onWinning: Function
-) {
-  sniperListener.sniperStateChanged.mockImplementationOnce(
-    (snapshot: SniperSnapshot) => {
-      expect(snapshot.state).toBe(SniperState.WINNING);
-      onWinning();
-    }
-  );
 }
