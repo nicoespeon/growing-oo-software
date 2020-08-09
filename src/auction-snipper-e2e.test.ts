@@ -127,6 +127,35 @@ describe("Auction Snipper", () => {
     auction.announceClosed();
     await application.showsSniperHasLostAuction(auction, 1207, 1098);
   });
+
+  it("should report invalid auction message and stop responding to events", async () => {
+    auction.startSellingItem();
+    auction2.startSellingItem();
+    await application.startBiddingIn(auction, auction2);
+    await auction.hasReceivedJoinRequestFromSniper(
+      ApplicationRunner.SNIPER_XMPP_ID
+    );
+
+    auction.reportPrice(500, 20, "other bidder");
+    await auction.hasReceivedBid(520, ApplicationRunner.SNIPER_XMPP_ID);
+
+    const brokenMessage = "a broken message";
+    auction.sendInvalidMessageContaining(brokenMessage);
+    await application.showsSniperHasFailed(auction);
+
+    auction.reportPrice(520, 21, "other bidder");
+    await waitForAnotherAuctionEvent();
+    await application.reportsInvalidMessage(auction, brokenMessage);
+    await application.showsSniperHasFailed(auction);
+  });
+
+  async function waitForAnotherAuctionEvent() {
+    await auction2.hasReceivedJoinRequestFromSniper(
+      ApplicationRunner.SNIPER_XMPP_ID
+    );
+    auction2.reportPrice(600, 6, "other bidder");
+    await application.hasShownSniperIsBidding(auction2, 600, 606);
+  }
 });
 
 class FakeAuctionServer implements AuctionServer {
@@ -168,6 +197,10 @@ class FakeAuctionServer implements AuctionServer {
     this.currentChat?.sendMessage(
       `SOLVersion: 1.1; Event: PRICE; CurrentPrice: ${price}; Increment: ${increment}; Bidder: ${bidder};`
     );
+  }
+
+  sendInvalidMessageContaining(message: string) {
+    this.currentChat?.sendMessage(`SOL Version: 1.1; ${message}`);
   }
 
   announceClosed() {
@@ -309,6 +342,19 @@ class ApplicationRunner {
       lastPrice,
       SniperState.WON
     );
+  }
+
+  async showsSniperHasFailed(auction: FakeAuctionServer) {
+    await this.driver.showsSniperStatus(
+      auction.itemId,
+      0,
+      0,
+      SniperState.FAILED
+    );
+  }
+
+  async reportsInvalidMessage(auction: FakeAuctionServer, message: string) {
+    // TODO: implement
   }
 
   async hasShownSniperIsBidding(

@@ -64,6 +64,9 @@ class SniperSnapshot {
       case SniperState.WINNING:
         return SniperState.WON;
 
+      case SniperState.FAILED:
+        return SniperState.FAILED;
+
       case SniperState.WON:
       case SniperState.LOST:
         throw new Defect("Auction is already closed");

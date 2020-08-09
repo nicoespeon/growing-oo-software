@@ -7,4 +7,5 @@ enum SniperState {
   LOSING = "losing",
   LOST = "lost",
   WON = "won",
+  FAILED = "failed",
 }
