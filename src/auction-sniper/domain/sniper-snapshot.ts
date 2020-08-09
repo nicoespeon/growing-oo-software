@@ -50,6 +50,10 @@ class SniperSnapshot {
     );
   }
 
+  failed(): SniperSnapshot {
+    return new SniperSnapshot(this.itemId, 0, 0, SniperState.FAILED);
+  }
+
   get stateWhenAuctionClosed(): SniperState {
     switch (this.state) {
       case SniperState.JOINING:

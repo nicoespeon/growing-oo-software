@@ -146,6 +146,16 @@ describe("AuctionSniper", () => {
     expect(state).toBe("winning");
   });
 
+  it("should report failed if auction fails when bidding", () => {
+    const { sniper, sniperListener } = setup();
+    allowingSniperBidding(sniperListener);
+
+    sniper.currentPrice(123, 45, PriceSource.FromOtherBidder);
+    sniper.auctionFailed();
+
+    expectSniperToFailWhenItIs(sniperListener, "bidding");
+  });
+
   function setup() {
     const auction = new FakeAuction();
     const sniperListener = new FakeSniperListener();
@@ -170,6 +180,16 @@ describe("AuctionSniper", () => {
         state = "winning";
       }
     );
+  }
+
+  function expectSniperToFailWhenItIs(
+    sniperListener: SniperListener,
+    expectedState: string
+  ) {
+    expect(sniperListener.sniperStateChanged).toBeCalledWith(
+      new SniperSnapshot(ITEM.identifier, 0, 0, SniperState.FAILED)
+    );
+    expect(state).toBe(expectedState);
   }
 });
 

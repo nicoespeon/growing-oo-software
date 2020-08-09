@@ -26,7 +26,8 @@ class AuctionSniper implements AuctionEventListener {
   }
 
   auctionFailed() {
-    // TODO: implement
+    this.snapshot = this.snapshot.failed();
+    this.notifyChange();
   }
 
   currentPrice(price: number, increment: number, source: PriceSource) {
