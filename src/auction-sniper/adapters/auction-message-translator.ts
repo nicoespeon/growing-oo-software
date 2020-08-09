@@ -12,7 +12,15 @@ class AuctionMessageTranslator {
     private listener: AuctionEventListener
   ) {}
 
-  processMessage(chat: Chat | null, message: Message) {
+  processMessage(_chat: Chat | null, message: Message) {
+    try {
+      this.translate(message);
+    } catch {
+      return this.listener.auctionFailed();
+    }
+  }
+
+  private translate(message: Message) {
     const event = AuctionEvent.from(message.body);
 
     switch (event.type) {
@@ -61,7 +69,13 @@ class AuctionEvent {
   }
 
   private get(fieldName: string): string {
-    return this.fields.get(fieldName) || "";
+    const value = this.fields.get(fieldName);
+
+    if (!value) {
+      throw new Error(`Value is missing for field "${fieldName}"`);
+    }
+
+    return value;
   }
 
   static from(messageBody: string): AuctionEvent {
@@ -82,6 +96,8 @@ class AuctionEvent {
     const [key, value] = field.split(":");
     if (value) {
       this.fields.set(key.trim(), value.trim());
+    } else if (key) {
+      throw new Error(`Can't find value for key "${key}"`);
     }
   }
 }

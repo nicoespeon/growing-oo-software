@@ -25,6 +25,10 @@ class AuctionSniper implements AuctionEventListener {
     this.notifyChange();
   }
 
+  auctionFailed() {
+    // TODO: implement
+  }
+
   currentPrice(price: number, increment: number, source: PriceSource) {
     switch (source) {
       case PriceSource.FromSniper:
