@@ -17,9 +17,9 @@ class XMPPAuction implements Auction {
       );
   }
 
-  static joinCommandFormat = () => "SOL Version: 1.1; Command: JOIN;";
+  static joinCommandFormat = () => "SOL Version: 1.1; Event: JOIN;";
   static bidCommandFormat = (bid: number) =>
-    `SOL Version: 1.1; Command: BID; Price: ${bid};`;
+    `SOL Version: 1.1; Event: BID; Price: ${bid};`;
 
   addAuctionEventListener(listener: AuctionEventListener) {
     this.chat.addMessageListener(
