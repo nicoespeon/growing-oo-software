@@ -1,5 +1,12 @@
 export { Connection, Chat, Message, MessageListener };
 
+/**
+ * This is a very bad, hacky implementation of what an XMPP Connection
+ * would look like. I made just enough so the tests work using a fake server.
+ *
+ * In practice, we should implement an adapter from an existing XMPP library.
+ */
+
 // Store connections in memory so we can simulate they connect to the same hostname
 const connections = new Map<string, Connection>();
 

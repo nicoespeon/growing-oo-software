@@ -40,3 +40,39 @@ I didn't want to set up a server & a client, then to rely on the browser. Theref
 - There are some gaps in the book that need to be filled when reproducing the code. The fact I'm adapting to TypeScript accentuates this.
 - I decided to simplify the UI by using a CLI and not to consider user inputs. In a real application, I'd probably have a server running and the view served in the browser. I'd use a solution like Cypress to interact with the UI.
 - My custom (fake) implementation of the XMPP Connection isn't great. On the positive side, I don't have to actually have such server running to run the tests. But I can feel how hacky it is, it's getting harder to fill the gap with what an actual server would do.
+
+## Final highlights
+
+- Jest custom matchers, so we can write tests like this:
+
+```js
+it("should join auction until auction closes", () => {
+  auction.startSellingItem();
+  application.startBiddingIn(auction);
+  auction.hasReceivedJoinRequestFromSniper();
+
+  auction.announceClosed();
+  application.showsSniperHasLostAuction(auction, 0, 0);
+});
+
+function hasReceivedJoinRequest() {
+  receivesAMessageMatching(expect.stringMatching("JOIN Command"));
+}
+
+function receivesAMessageMatching(matcher: jest.CustomMatcher) {
+  const message = messages.poll();
+  expect(message.body).toEqual(matcher);
+}
+```
+
+- As illustrated above, focusing on the business language makes tests easier to read. Further tests are easy to write. The TDD process really helps here because we can think about the intent before digging into the implementation.
+
+- Create interfaces when it makes sense. If there can be different implementation (e.g. Fake & actual), an interface make sense. Domain classes usually don't need interfaces.
+
+- Create an E2E test to illustrate the feature. Then smaller unit/integration tests to implement the required blocks.
+
+- TDD doesn't mean you don't design in advance. Each step we stop, think and design the next steps of a solution. This help moving faster, paying off in the iterations.
+
+- Pay attention to classes responsibilities. Don't hack new features into existing classes, but create new ones. Either you do that by designing first, either you should refactor them out after. Designing first helps.
+
+- Node.js standard library is poor compared to Java. Hopefully there are packages, but JS relies much more on primitives — there are less rich types embed in the language (e.g. BlockingQueue).
