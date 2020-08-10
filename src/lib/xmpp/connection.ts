@@ -81,12 +81,16 @@ interface ChatListener {
 }
 
 class Chat {
-  private listeners: MessageListener[] = [];
+  private listeners = new Set<MessageListener>();
 
   constructor(public readonly participant: string) {}
 
   addMessageListener(listener: MessageListener) {
-    this.listeners.push(listener);
+    this.listeners.add(listener);
+  }
+
+  removeMessageListener(listener: MessageListener) {
+    this.listeners.delete(listener);
   }
 
   sendMessage(message: string) {
