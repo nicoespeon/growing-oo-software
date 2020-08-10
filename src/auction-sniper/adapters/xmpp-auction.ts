@@ -2,6 +2,7 @@ import { Connection as XMPPConnection, Chat } from "../../lib/xmpp";
 import { AuctionMessageTranslator } from "./auction-message-translator";
 import { Auction } from "../domain/auction";
 import { AuctionEventListener } from "../domain/auction-event-listener";
+import { XMPPFailureReporter } from "./xmpp-failure-reporter";
 
 export { XMPPAuction };
 
@@ -25,7 +26,8 @@ class XMPPAuction implements Auction {
     const auctionListeners = new AuctionListeners([listener]);
     const translator = new AuctionMessageTranslator(
       this.connection.user,
-      auctionListeners
+      auctionListeners,
+      new XMPPFailureReporter()
     );
     auctionListeners.add(new ChatDisconnectedFor(translator, this.chat));
 

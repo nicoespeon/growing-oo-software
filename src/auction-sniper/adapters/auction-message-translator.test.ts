@@ -3,7 +3,10 @@ import {
   AuctionEventListener,
   PriceSource,
 } from "../domain/auction-event-listener";
-import { AuctionMessageTranslator } from "./auction-message-translator";
+import {
+  AuctionMessageTranslator,
+  FailureReporter,
+} from "./auction-message-translator";
 
 describe("AuctionMessageTranslator", () => {
   const UNUSED_CHAT = null;
@@ -12,7 +15,12 @@ describe("AuctionMessageTranslator", () => {
   it("should notify auction closed when close message is received", () => {
     const message = new Message("SOL Version: 1.1; Event: CLOSE;");
     const listener = new FakeAuctionEventListener();
-    const translator = new AuctionMessageTranslator(SNIPER_ID, listener);
+    const failureReporter = new FakeFailureReporter();
+    const translator = new AuctionMessageTranslator(
+      SNIPER_ID,
+      listener,
+      failureReporter
+    );
 
     translator.processMessage(UNUSED_CHAT, message);
 
@@ -24,7 +32,12 @@ describe("AuctionMessageTranslator", () => {
       "SOL Version: 1.1; Event: PRICE; CurrentPrice: 192; Increment: 7; Bidder: Someone else;"
     );
     const listener = new FakeAuctionEventListener();
-    const translator = new AuctionMessageTranslator(SNIPER_ID, listener);
+    const failureReporter = new FakeFailureReporter();
+    const translator = new AuctionMessageTranslator(
+      SNIPER_ID,
+      listener,
+      failureReporter
+    );
 
     translator.processMessage(UNUSED_CHAT, message);
 
@@ -40,7 +53,12 @@ describe("AuctionMessageTranslator", () => {
       `SOL Version: 1.1; Event: PRICE; CurrentPrice: 192; Increment: 7; Bidder: ${SNIPER_ID};`
     );
     const listener = new FakeAuctionEventListener();
-    const translator = new AuctionMessageTranslator(SNIPER_ID, listener);
+    const failureReporter = new FakeFailureReporter();
+    const translator = new AuctionMessageTranslator(
+      SNIPER_ID,
+      listener,
+      failureReporter
+    );
 
     translator.processMessage(UNUSED_CHAT, message);
 
@@ -52,13 +70,25 @@ describe("AuctionMessageTranslator", () => {
   });
 
   it("should notify auction failed when bad message is received", () => {
-    const message = new Message("a bad message");
+    const aBadMessage = "a bad message";
+    const message = new Message(aBadMessage);
     const listener = new FakeAuctionEventListener();
-    const translator = new AuctionMessageTranslator(SNIPER_ID, listener);
+    const failureReporter = new FakeFailureReporter();
+    const translator = new AuctionMessageTranslator(
+      SNIPER_ID,
+      listener,
+      failureReporter
+    );
 
     translator.processMessage(UNUSED_CHAT, message);
 
     expect(listener.auctionFailed).toBeCalledTimes(1);
+    expect(failureReporter.cannotTranslateMessage).toBeCalledTimes(1);
+    expect(failureReporter.cannotTranslateMessage).toBeCalledWith(
+      SNIPER_ID,
+      aBadMessage,
+      expect.any(Error)
+    );
   });
 
   it("should notify auction failed when event type is missing", () => {
@@ -66,7 +96,12 @@ describe("AuctionMessageTranslator", () => {
       `SOL Version: 1.1; CurrentPrice: 234; Increment: 5; Bidder: ${SNIPER_ID};`
     );
     const listener = new FakeAuctionEventListener();
-    const translator = new AuctionMessageTranslator(SNIPER_ID, listener);
+    const failureReporter = new FakeFailureReporter();
+    const translator = new AuctionMessageTranslator(
+      SNIPER_ID,
+      listener,
+      failureReporter
+    );
 
     translator.processMessage(UNUSED_CHAT, message);
 
@@ -78,4 +113,8 @@ class FakeAuctionEventListener implements AuctionEventListener {
   auctionClosed = jest.fn();
   auctionFailed = jest.fn();
   currentPrice = jest.fn();
+}
+
+class FakeFailureReporter implements FailureReporter {
+  cannotTranslateMessage = jest.fn();
 }

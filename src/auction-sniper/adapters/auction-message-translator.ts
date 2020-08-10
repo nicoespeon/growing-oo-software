@@ -4,18 +4,24 @@ import {
   PriceSource,
 } from "../domain/auction-event-listener";
 
-export { AuctionMessageTranslator };
+export { AuctionMessageTranslator, FailureReporter };
 
 class AuctionMessageTranslator {
   constructor(
     private readonly sniperId: string,
-    private listener: AuctionEventListener
+    private listener: AuctionEventListener,
+    private failureReporter: FailureReporter
   ) {}
 
   processMessage(_chat: Chat | null, message: Message) {
     try {
       this.translate(message);
-    } catch {
+    } catch (error) {
+      this.failureReporter.cannotTranslateMessage(
+        this.sniperId,
+        message.body,
+        error
+      );
       return this.listener.auctionFailed();
     }
   }
@@ -100,4 +106,12 @@ class AuctionEvent {
       throw new Error(`Can't find value for key "${key}"`);
     }
   }
+}
+
+interface FailureReporter {
+  cannotTranslateMessage: (
+    auctionId: string,
+    failedMessage: string,
+    error: Error
+  ) => void;
 }
