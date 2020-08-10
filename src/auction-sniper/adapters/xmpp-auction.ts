@@ -22,9 +22,14 @@ class XMPPAuction implements Auction {
     `SOL Version: 1.1; Event: BID; Price: ${bid};`;
 
   addAuctionEventListener(listener: AuctionEventListener) {
-    this.chat.addMessageListener(
-      new AuctionMessageTranslator(this.connection.user, listener)
+    const auctionListeners = new AuctionListeners([listener]);
+    const translator = new AuctionMessageTranslator(
+      this.connection.user,
+      auctionListeners
     );
+    auctionListeners.add(new ChatDisconnectedFor(translator, this.chat));
+
+    this.chat.addMessageListener(translator);
   }
 
   bid(amount: number) {
@@ -34,4 +39,40 @@ class XMPPAuction implements Auction {
   join() {
     this.chat.sendMessage(XMPPAuction.joinCommandFormat());
   }
+}
+
+class AuctionListeners implements AuctionEventListener {
+  constructor(private listeners: AuctionEventListener[] = []) {}
+
+  add(listener: AuctionEventListener) {
+    this.listeners.push(listener);
+  }
+
+  auctionFailed() {
+    this.listeners.forEach((listener) => listener.auctionFailed());
+  }
+
+  auctionClosed() {
+    this.listeners.forEach((listener) => listener.auctionClosed());
+  }
+
+  currentPrice(price: number, increment: number, source: PriceSource) {
+    this.listeners.forEach((listener) =>
+      listener.currentPrice(price, increment, source)
+    );
+  }
+}
+
+class ChatDisconnectedFor implements AuctionEventListener {
+  constructor(
+    private translator: AuctionMessageTranslator,
+    private chat: Chat
+  ) {}
+
+  auctionFailed() {
+    this.chat.removeMessageListener(this.translator);
+  }
+
+  auctionClosed() {}
+  currentPrice() {}
 }

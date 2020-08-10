@@ -146,6 +146,7 @@ describe("Auction Snipper", () => {
     auction.reportPrice(520, 21, "other bidder");
     await waitForAnotherAuctionEvent();
     await application.reportsInvalidMessage(auction, brokenMessage);
+    await auction.hasNotReceivedBid(541, ApplicationRunner.SNIPER_XMPP_ID);
     await application.showsSniperHasFailed(auction);
   });
 
@@ -224,6 +225,13 @@ class FakeAuctionServer implements AuctionServer {
       sniperId,
       expect.stringMatching(XMPPAuction.bidCommandFormat(bid))
     );
+  }
+
+  async hasNotReceivedBid(bid: number, sniperId: string) {
+    await this.messageListener.receivesAMessage(
+      expect.not.stringMatching(XMPPAuction.bidCommandFormat(bid))
+    );
+    expect(this.currentChat?.participant).toBe(sniperId);
   }
 
   private async receivesAMessageMatching(
