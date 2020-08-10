@@ -14,13 +14,7 @@ describe("AuctionMessageTranslator", () => {
 
   it("should notify auction closed when close message is received", () => {
     const message = new Message("SOL Version: 1.1; Event: CLOSE;");
-    const listener = new FakeAuctionEventListener();
-    const failureReporter = new FakeFailureReporter();
-    const translator = new AuctionMessageTranslator(
-      SNIPER_ID,
-      listener,
-      failureReporter
-    );
+    const { listener, translator } = setup();
 
     translator.processMessage(UNUSED_CHAT, message);
 
@@ -31,13 +25,7 @@ describe("AuctionMessageTranslator", () => {
     const message = new Message(
       "SOL Version: 1.1; Event: PRICE; CurrentPrice: 192; Increment: 7; Bidder: Someone else;"
     );
-    const listener = new FakeAuctionEventListener();
-    const failureReporter = new FakeFailureReporter();
-    const translator = new AuctionMessageTranslator(
-      SNIPER_ID,
-      listener,
-      failureReporter
-    );
+    const { listener, translator } = setup();
 
     translator.processMessage(UNUSED_CHAT, message);
 
@@ -52,13 +40,7 @@ describe("AuctionMessageTranslator", () => {
     const message = new Message(
       `SOL Version: 1.1; Event: PRICE; CurrentPrice: 192; Increment: 7; Bidder: ${SNIPER_ID};`
     );
-    const listener = new FakeAuctionEventListener();
-    const failureReporter = new FakeFailureReporter();
-    const translator = new AuctionMessageTranslator(
-      SNIPER_ID,
-      listener,
-      failureReporter
-    );
+    const { listener, translator } = setup();
 
     translator.processMessage(UNUSED_CHAT, message);
 
@@ -72,13 +54,7 @@ describe("AuctionMessageTranslator", () => {
   it("should notify auction failed when bad message is received", () => {
     const aBadMessage = "a bad message";
     const message = new Message(aBadMessage);
-    const listener = new FakeAuctionEventListener();
-    const failureReporter = new FakeFailureReporter();
-    const translator = new AuctionMessageTranslator(
-      SNIPER_ID,
-      listener,
-      failureReporter
-    );
+    const { listener, failureReporter, translator } = setup();
 
     translator.processMessage(UNUSED_CHAT, message);
 
@@ -95,6 +71,14 @@ describe("AuctionMessageTranslator", () => {
     const message = new Message(
       `SOL Version: 1.1; CurrentPrice: 234; Increment: 5; Bidder: ${SNIPER_ID};`
     );
+    const { listener, translator } = setup();
+
+    translator.processMessage(UNUSED_CHAT, message);
+
+    expect(listener.auctionFailed).toBeCalledTimes(1);
+  });
+
+  function setup() {
     const listener = new FakeAuctionEventListener();
     const failureReporter = new FakeFailureReporter();
     const translator = new AuctionMessageTranslator(
@@ -103,10 +87,8 @@ describe("AuctionMessageTranslator", () => {
       failureReporter
     );
 
-    translator.processMessage(UNUSED_CHAT, message);
-
-    expect(listener.auctionFailed).toBeCalledTimes(1);
-  });
+    return { listener, failureReporter, translator };
+  }
 });
 
 class FakeAuctionEventListener implements AuctionEventListener {
