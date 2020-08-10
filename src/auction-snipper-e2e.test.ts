@@ -13,6 +13,7 @@ import { Main } from "./auction-sniper";
 import { AuctionServer } from "./auction-sniper/domain/auction-server";
 import { SniperState } from "./auction-sniper/domain/sniper-state";
 import { XMPPAuction } from "./auction-sniper/adapters/xmpp-auction";
+import { FileLogger } from "./auction-sniper/adapters/xmpp-auction-house";
 
 describe("Auction Snipper", () => {
   let auction: FakeAuctionServer;
@@ -413,15 +414,13 @@ class ApplicationRunner {
 }
 
 class AuctionLogDriver {
-  static readonly LOG_FILE_NAME = "auction-sniper.log";
-
   hasEntry(matcher: jest.CustomMatcher) {
-    expect(fs.readFileSync(AuctionLogDriver.LOG_FILE_NAME)).toBe(matcher);
+    expect(fs.readFileSync(FileLogger.LOG_FILE_NAME, "utf-8")).toEqual(matcher);
   }
 
   clearLogs() {
     try {
-      fs.unlinkSync(AuctionLogDriver.LOG_FILE_NAME);
+      fs.unlinkSync(FileLogger.LOG_FILE_NAME);
     } catch {}
   }
 }

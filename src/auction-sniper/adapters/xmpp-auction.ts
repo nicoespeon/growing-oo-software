@@ -1,11 +1,13 @@
 import { Connection as XMPPConnection, Chat } from "../../lib/xmpp";
-import { AuctionMessageTranslator } from "./auction-message-translator";
+import {
+  AuctionMessageTranslator,
+  FailureReporter,
+} from "./auction-message-translator";
 import { Auction } from "../domain/auction";
 import {
   AuctionEventListener,
   PriceSource,
 } from "../domain/auction-event-listener";
-import { XMPPFailureReporter } from "./xmpp-failure-reporter";
 
 export { XMPPAuction };
 
@@ -13,7 +15,11 @@ class XMPPAuction implements Auction {
   static readonly AUCTION_RESOURCE = "Auction";
   private chat: Chat;
 
-  constructor(private connection: XMPPConnection, itemId: string) {
+  constructor(
+    private connection: XMPPConnection,
+    itemId: string,
+    private failureReporter: FailureReporter
+  ) {
     this.chat = connection
       .getChatManager()
       .createChat(
@@ -30,7 +36,7 @@ class XMPPAuction implements Auction {
     const translator = new AuctionMessageTranslator(
       this.connection.user,
       auctionListeners,
-      new XMPPFailureReporter()
+      this.failureReporter
     );
     auctionListeners.add(new ChatDisconnectedFor(translator, this.chat));
 
