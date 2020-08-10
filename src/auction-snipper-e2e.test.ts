@@ -1,3 +1,4 @@
+import * as fs from "fs";
 import { Time, wait } from "./lib/chronos";
 import { BlockingQueue } from "./lib/queue";
 import { Thread } from "./lib/thread";
@@ -279,12 +280,14 @@ class ApplicationRunner {
   static readonly SNIPER_PASSWORD = "sniper";
 
   private driver: AuctionSniperDriver;
+  private logDriver = new AuctionLogDriver();
 
   constructor() {
     this.driver = new AuctionSniperDriver(1000);
   }
 
   async startBiddingIn(...auctions: AuctionServer[]): Promise<void> {
+    this.logDriver.clearLogs();
     const thread = new Thread("Test Application", () => {
       auctions.forEach((auction) => {
         Main.main(
@@ -308,6 +311,7 @@ class ApplicationRunner {
   }
 
   async startBiddingWithStopPrice(auction: AuctionServer, stopPrice: number) {
+    this.logDriver.clearLogs();
     const thread = new Thread("Test Application", () => {
       Main.main(
         auction.XMPP_HOST_NAME,
@@ -362,7 +366,7 @@ class ApplicationRunner {
   }
 
   async reportsInvalidMessage(auction: FakeAuctionServer, message: string) {
-    // TODO: implement
+    this.logDriver.hasEntry(expect.stringContaining(message));
   }
 
   async hasShownSniperIsBidding(
@@ -405,6 +409,20 @@ class ApplicationRunner {
 
   stop(): void {
     this.driver.dispose();
+  }
+}
+
+class AuctionLogDriver {
+  static readonly LOG_FILE_NAME = "auction-sniper.log";
+
+  hasEntry(matcher: jest.CustomMatcher) {
+    expect(fs.readFileSync(AuctionLogDriver.LOG_FILE_NAME)).toBe(matcher);
+  }
+
+  clearLogs() {
+    try {
+      fs.unlinkSync(AuctionLogDriver.LOG_FILE_NAME);
+    } catch {}
   }
 }
 
